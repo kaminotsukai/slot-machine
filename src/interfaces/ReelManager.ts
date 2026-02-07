@@ -10,7 +10,7 @@ export interface ReelManager {
   isReelSpinning(reelIndex: number): boolean;
   getReelCount(): number;
   getAllReelSymbols(): (Symbol | null)[];
-  
+
   // Symbol management
   generateRandomSymbol(): Symbol;
   validateSymbolSet(symbols: Symbol[]): boolean;

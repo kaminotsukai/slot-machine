@@ -1,11 +1,11 @@
 /**
  * スロットマシンアプリケーションのメインエントリポイント
- * 
+ *
  * このファイルは以下を担当します：
  * - すべてのコンポーネント（GameEngine、UserInterface）の接続
  * - アプリケーションの初期化と起動
  * - 適切なコンポーネントライフサイクル管理
- * 
+ *
  * 要件: 1.1, 1.2, 1.3
  */
 
@@ -40,14 +40,14 @@ export class SlotMachineApp {
   constructor(containerId: string = 'slot-machine-container') {
     // GameEngineを初期化
     this.gameEngine = new GameEngine();
-    
+
     // UserInterfaceを初期化
     this.userInterface = new UserInterface(containerId);
   }
 
   /**
    * アプリケーションを初期化して起動します
-   * 
+   *
    * 初期化処理：
    * 1. 初期状態の確認（要件1.3: 待機状態）
    * 2. 空のリールを表示（要件1.1）
@@ -73,21 +73,21 @@ export class SlotMachineApp {
     const placeholderSymbols = [
       { id: 'placeholder', name: 'プレースホルダー', displayValue: '?' },
       { id: 'placeholder', name: 'プレースホルダー', displayValue: '?' },
-      { id: 'placeholder', name: 'プレースホルダー', displayValue: '?' }
+      { id: 'placeholder', name: 'プレースホルダー', displayValue: '?' },
     ];
     this.userInterface.displayReels(placeholderSymbols);
 
     // 要件1.2: スピンボタンを有効状態で表示
     this.userInterface.displaySpinButton(true);
-    
+
     // 停止ボタンを無効状態で表示
     this.userInterface.displayStopButtons([false, false, false]);
 
     // スピンボタンのクリックイベントハンドラを設定
     this.userInterface.onSpinButtonClick(() => this.handleSpin());
-    
+
     // 停止ボタンのクリックイベントハンドラを設定
-    this.userInterface.onStopButtonClick((reelIndex) => this.handleStopReel(reelIndex));
+    this.userInterface.onStopButtonClick(reelIndex => this.handleStopReel(reelIndex));
 
     this.isInitialized = true;
     console.log('✅ スロットマシンアプリケーションが初期化されました');
@@ -96,7 +96,7 @@ export class SlotMachineApp {
 
   /**
    * スピン処理を実行します
-   * 
+   *
    * スピンフロー：
    * 1. スピンボタンを無効化（要件2.2）
    * 2. スピンアニメーションを開始（要件2.3）
@@ -128,18 +128,17 @@ export class SlotMachineApp {
       this.startReelSymbolUpdates();
 
       console.log('🎰 スピン開始');
-
     } catch (error) {
       console.error('❌ スピン処理中にエラーが発生しました:', error);
-      
+
       // エラー時もボタンを再有効化
       this.userInterface.displaySpinButton(true);
       this.userInterface.displayStopButtons([false, false, false]);
-      
+
       // エラーメッセージを表示
       this.userInterface.displayResult({
         isWin: false,
-        message: 'エラーが発生しました。もう一度お試しください。'
+        message: 'エラーが発生しました。もう一度お試しください。',
       });
     }
   }
@@ -174,9 +173,9 @@ export class SlotMachineApp {
 
   /**
    * リール停止処理を実行します
-   * 
+   *
    * @param reelIndex - 停止するリールのインデックス
-   * 
+   *
    * 停止フロー：
    * 1. 指定されたリールを停止（要件2.5）
    * 2. 停止したリールのボタンを無効化、他のリールは有効のまま（要件2.6）
@@ -186,10 +185,10 @@ export class SlotMachineApp {
     try {
       // 要件2.5: 対応するリールを停止
       const symbol = this.gameEngine.stopReel(reelIndex);
-      
+
       // UIでアニメーションを停止
       this.userInterface.stopSpinAnimation(reelIndex);
-      
+
       // 停止したリールのシンボルを表示
       const currentSymbols = this.gameEngine.getCurrentReelSymbols();
       this.userInterface.displayReels(currentSymbols);
@@ -198,7 +197,7 @@ export class SlotMachineApp {
       const buttonStates = [
         this.gameEngine.isReelSpinning(0),
         this.gameEngine.isReelSpinning(1),
-        this.gameEngine.isReelSpinning(2)
+        this.gameEngine.isReelSpinning(2),
       ];
       this.userInterface.displayStopButtons(buttonStates);
 
@@ -208,19 +207,18 @@ export class SlotMachineApp {
       if (this.gameEngine.areAllReelsStopped()) {
         // リールシンボル更新を停止
         this.stopReelSymbolUpdates();
-        
+
         await this.delay(300);
         await this.handleGameResult();
       }
-
     } catch (error) {
       console.error(`❌ リール ${reelIndex + 1} の停止中にエラーが発生しました:`, error);
-      
+
       // エラーメッセージを表示
       if (error instanceof Error) {
         this.userInterface.displayResult({
           isWin: false,
-          message: error.message
+          message: error.message,
         });
       }
     }
@@ -228,7 +226,7 @@ export class SlotMachineApp {
 
   /**
    * ゲーム結果を処理します
-   * 
+   *
    * 結果処理フロー：
    * 1. 勝敗を評価
    * 2. 結果を表示（要件4.4, 4.5）
@@ -246,7 +244,7 @@ export class SlotMachineApp {
       console.log('🎰 スピン結果:', {
         symbols: spinResult.symbols.map(s => s.displayValue).join(' '),
         isWin: spinResult.winResult.isWin,
-        message: spinResult.winResult.message
+        message: spinResult.winResult.message,
       });
 
       // 結果表示後、短い遅延
@@ -254,13 +252,12 @@ export class SlotMachineApp {
 
       // スピンボタンを再有効化
       this.userInterface.displaySpinButton(true);
-      
+
       // 停止ボタンを無効化
       this.userInterface.displayStopButtons([false, false, false]);
-
     } catch (error) {
       console.error('❌ 結果処理中にエラーが発生しました:', error);
-      
+
       // エラー時もボタンを再有効化
       this.userInterface.displaySpinButton(true);
       this.userInterface.displayStopButtons([false, false, false]);
@@ -318,16 +315,16 @@ export function main(): void {
 function initializeApp(): void {
   try {
     console.log('🎰 スロットマシンアプリケーションを起動中...');
-    
+
     // SlotMachineAppインスタンスを作成
     const app = new SlotMachineApp('slot-machine-container');
-    
+
     // アプリケーションを初期化
     app.initialize();
-    
+
     // グローバルスコープに公開（デバッグ用）
     (window as any).slotMachineApp = app;
-    
+
     console.log('🎉 アプリケーションの起動が完了しました！');
   } catch (error) {
     console.error('❌ アプリケーションの初期化に失敗しました:', error);

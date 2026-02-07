@@ -127,7 +127,7 @@ describe('GameEngine', () => {
     test('一部停止後、停止したリールのシンボルは固定される', () => {
       gameEngine.initiateSpin();
       const symbol0 = gameEngine.stopReel(0);
-      
+
       const symbols = gameEngine.getCurrentReelSymbols();
       expect(symbols[0]).toEqual(symbol0);
       expect(symbols[1]).not.toBeNull();

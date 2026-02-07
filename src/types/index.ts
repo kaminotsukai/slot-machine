@@ -7,7 +7,7 @@ export enum GameState {
   IDLE = 'idle',
   SPINNING = 'spinning',
   PARTIALLY_STOPPED = 'partially_stopped',
-  SHOWING_RESULTS = 'showing_results'
+  SHOWING_RESULTS = 'showing_results',
 }
 
 // Symbol representation
@@ -48,5 +48,5 @@ export const DEFAULT_SYMBOLS: Symbol[] = [
   { id: 'plum', name: 'Plum', displayValue: '🍇' },
   { id: 'bell', name: 'Bell', displayValue: '🔔' },
   { id: 'bar', name: 'Bar', displayValue: '⬛' },
-  { id: 'seven', name: 'Seven', displayValue: '7️⃣' }
+  { id: 'seven', name: 'Seven', displayValue: '7️⃣' },
 ];

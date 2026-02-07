@@ -17,7 +17,7 @@ describe('Project Setup', () => {
       expect(DEFAULT_SYMBOLS[0]).toEqual({
         id: 'cherry',
         name: 'Cherry',
-        displayValue: '🍒'
+        displayValue: '🍒',
       });
     });
 
@@ -25,9 +25,9 @@ describe('Project Setup', () => {
       const symbol: Symbol = {
         id: 'test',
         name: 'Test Symbol',
-        displayValue: '🧪'
+        displayValue: '🧪',
       };
-      
+
       expect(symbol.id).toBe('test');
       expect(symbol.name).toBe('Test Symbol');
       expect(symbol.displayValue).toBe('🧪');
@@ -37,13 +37,13 @@ describe('Project Setup', () => {
       const winResult: WinResult = {
         isWin: true,
         winType: 'three-of-a-kind',
-        message: 'You won!'
+        message: 'You won!',
       };
 
       const spinResult: SpinResult = {
         symbols: DEFAULT_SYMBOLS.slice(0, 3),
         winResult,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       expect(spinResult.symbols).toHaveLength(3);
@@ -60,16 +60,24 @@ describe('Project Setup', () => {
           const firstSymbol = symbols[0];
           return symbols.every(s => s.id === firstSymbol.id);
         },
-        message: 'Three of a kind!'
+        message: 'Three of a kind!',
       };
 
       expect(winCondition.id).toBe('three-of-a-kind');
       expect(typeof winCondition.pattern).toBe('function');
-      
+
       // Test the pattern function with guaranteed non-undefined symbols
-      const matchingSymbols: Symbol[] = [DEFAULT_SYMBOLS[0]!, DEFAULT_SYMBOLS[0]!, DEFAULT_SYMBOLS[0]!];
-      const nonMatchingSymbols: Symbol[] = [DEFAULT_SYMBOLS[0]!, DEFAULT_SYMBOLS[1]!, DEFAULT_SYMBOLS[2]!];
-      
+      const matchingSymbols: Symbol[] = [
+        DEFAULT_SYMBOLS[0]!,
+        DEFAULT_SYMBOLS[0]!,
+        DEFAULT_SYMBOLS[0]!,
+      ];
+      const nonMatchingSymbols: Symbol[] = [
+        DEFAULT_SYMBOLS[0]!,
+        DEFAULT_SYMBOLS[1]!,
+        DEFAULT_SYMBOLS[2]!,
+      ];
+
       expect(winCondition.pattern(matchingSymbols)).toBe(true);
       expect(winCondition.pattern(nonMatchingSymbols)).toBe(false);
     });
@@ -80,7 +88,7 @@ describe('Project Setup', () => {
       // Test that all types can be imported without errors
       expect(typeof GameState).toBe('object');
       expect(Array.isArray(DEFAULT_SYMBOLS)).toBe(true);
-      
+
       // Test that we can create instances of each interface type
       const symbol: Symbol = { id: 'test', name: 'Test', displayValue: '🧪' };
       const winResult: WinResult = { isWin: false, message: 'Try again' };
@@ -88,14 +96,14 @@ describe('Project Setup', () => {
         id: 'test',
         name: 'Test',
         pattern: () => false,
-        message: 'Test'
+        message: 'Test',
       };
       const spinResult: SpinResult = {
         symbols: [symbol],
         winResult,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
-      
+
       expect(symbol.id).toBe('test');
       expect(winResult.isWin).toBe(false);
       expect(winCondition.id).toBe('test');

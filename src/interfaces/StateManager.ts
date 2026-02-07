@@ -8,7 +8,7 @@ export interface StateManager {
   getCurrentState(): GameState;
   transitionTo(newState: GameState): boolean;
   canTransition(from: GameState, to: GameState): boolean;
-  
+
   // State validation
   isValidState(state: GameState): boolean;
 }

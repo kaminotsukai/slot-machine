@@ -9,43 +9,41 @@ module.exports = {
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
-    clean: true
+    clean: true,
   },
   resolve: {
     extensions: ['.ts', '.js'],
     fallback: {
-      "process": require.resolve("process/browser")
-    }
+      process: require.resolve('process/browser'),
+    },
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
         use: 'ts-loader',
-        exclude: /node_modules/
-      }
-    ]
+        exclude: /node_modules/,
+      },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './index.html',
-      inject: 'body'
+      inject: 'body',
     }),
     new CopyWebpackPlugin({
-      patterns: [
-        { from: 'styles.css', to: 'styles.css' }
-      ]
+      patterns: [{ from: 'styles.css', to: 'styles.css' }],
     }),
     new webpack.ProvidePlugin({
-      process: 'process/browser'
-    })
+      process: 'process/browser',
+    }),
   ],
   devServer: {
     static: {
-      directory: path.join(__dirname, 'dist')
+      directory: path.join(__dirname, 'dist'),
     },
     compress: true,
     port: 8080,
-    open: true
-  }
+    open: true,
+  },
 };

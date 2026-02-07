@@ -79,7 +79,9 @@ describe('StateManager', () => {
     test('should reject all self-transitions', () => {
       expect(stateManager.canTransition(GameState.IDLE, GameState.IDLE)).toBe(false);
       expect(stateManager.canTransition(GameState.SPINNING, GameState.SPINNING)).toBe(false);
-      expect(stateManager.canTransition(GameState.SHOWING_RESULTS, GameState.SHOWING_RESULTS)).toBe(false);
+      expect(stateManager.canTransition(GameState.SHOWING_RESULTS, GameState.SHOWING_RESULTS)).toBe(
+        false
+      );
     });
   });
 
@@ -144,7 +146,7 @@ describe('StateManager', () => {
 
       test('should reject all invalid transitions from SPINNING state', () => {
         stateManager.transitionTo(GameState.SPINNING);
-        
+
         // SPINNING → SPINNING (self-transition)
         expect(stateManager.transitionTo(GameState.SPINNING)).toBe(false);
         expect(stateManager.getCurrentState()).toBe(GameState.SPINNING);
@@ -157,7 +159,7 @@ describe('StateManager', () => {
       test('should reject all invalid transitions from SHOWING_RESULTS state', () => {
         stateManager.transitionTo(GameState.SPINNING);
         stateManager.transitionTo(GameState.SHOWING_RESULTS);
-        
+
         // SHOWING_RESULTS → SHOWING_RESULTS (self-transition)
         expect(stateManager.transitionTo(GameState.SHOWING_RESULTS)).toBe(false);
         expect(stateManager.getCurrentState()).toBe(GameState.SHOWING_RESULTS);
@@ -169,7 +171,7 @@ describe('StateManager', () => {
 
       test('should handle multiple consecutive invalid transition attempts', () => {
         const initialState = stateManager.getCurrentState();
-        
+
         // 複数回の無効な遷移を試行
         for (let i = 0; i < 5; i++) {
           expect(stateManager.transitionTo(GameState.SHOWING_RESULTS)).toBe(false);
@@ -200,18 +202,18 @@ describe('StateManager', () => {
       test('should handle invalid state values in isValidState', () => {
         // 空文字列
         expect(stateManager.isValidState('' as GameState)).toBe(false);
-        
+
         // 無効な文字列
         expect(stateManager.isValidState('invalid_state' as GameState)).toBe(false);
         expect(stateManager.isValidState('INVALID' as GameState)).toBe(false);
-        
+
         // 数値（型の不一致）
         expect(stateManager.isValidState(123 as any)).toBe(false);
-        
+
         // null/undefined
         expect(stateManager.isValidState(null as any)).toBe(false);
         expect(stateManager.isValidState(undefined as any)).toBe(false);
-        
+
         // オブジェクト
         expect(stateManager.isValidState({} as any)).toBe(false);
         expect(stateManager.isValidState({ state: 'idle' } as any)).toBe(false);
@@ -220,23 +222,25 @@ describe('StateManager', () => {
       test('should handle canTransition with invalid state values', () => {
         // 無効な開始状態
         expect(stateManager.canTransition('invalid' as GameState, GameState.SPINNING)).toBe(false);
-        
+
         // 無効な目標状態
         expect(stateManager.canTransition(GameState.IDLE, 'invalid' as GameState)).toBe(false);
-        
+
         // 両方とも無効
-        expect(stateManager.canTransition('invalid1' as GameState, 'invalid2' as GameState)).toBe(false);
+        expect(stateManager.canTransition('invalid1' as GameState, 'invalid2' as GameState)).toBe(
+          false
+        );
       });
 
       test('should handle transitionTo with current state verification', () => {
         // 現在の状態を確認
         const currentState = stateManager.getCurrentState();
         expect(currentState).toBe(GameState.IDLE);
-        
+
         // 無効な遷移を試行
         const result = stateManager.transitionTo(GameState.SHOWING_RESULTS);
         expect(result).toBe(false);
-        
+
         // 状態が変更されていないことを確認
         expect(stateManager.getCurrentState()).toBe(currentState);
       });
@@ -258,11 +262,11 @@ describe('StateManager', () => {
         for (const op of operations) {
           const result = stateManager.transitionTo(op.target);
           expect(result).toBe(op.shouldSucceed);
-          
+
           if (op.shouldSucceed) {
             expectedState = op.target;
           }
-          
+
           expect(stateManager.getCurrentState()).toBe(expectedState);
         }
       });
@@ -272,10 +276,10 @@ describe('StateManager', () => {
         for (let i = 0; i < 10; i++) {
           expect(stateManager.transitionTo(GameState.SPINNING)).toBe(true);
           expect(stateManager.getCurrentState()).toBe(GameState.SPINNING);
-          
+
           expect(stateManager.transitionTo(GameState.SHOWING_RESULTS)).toBe(true);
           expect(stateManager.getCurrentState()).toBe(GameState.SHOWING_RESULTS);
-          
+
           expect(stateManager.transitionTo(GameState.IDLE)).toBe(true);
           expect(stateManager.getCurrentState()).toBe(GameState.IDLE);
         }
@@ -290,26 +294,30 @@ describe('StateManager', () => {
         // SPINNING状態で初期化
         const spinningManager = new StateManager(GameState.SPINNING);
         expect(spinningManager.getCurrentState()).toBe(GameState.SPINNING);
-        expect(spinningManager.canTransition(GameState.SPINNING, GameState.SHOWING_RESULTS)).toBe(true);
+        expect(spinningManager.canTransition(GameState.SPINNING, GameState.SHOWING_RESULTS)).toBe(
+          true
+        );
         expect(spinningManager.canTransition(GameState.SPINNING, GameState.IDLE)).toBe(false);
 
         // SHOWING_RESULTS状態で初期化
         const resultsManager = new StateManager(GameState.SHOWING_RESULTS);
         expect(resultsManager.getCurrentState()).toBe(GameState.SHOWING_RESULTS);
         expect(resultsManager.canTransition(GameState.SHOWING_RESULTS, GameState.IDLE)).toBe(true);
-        expect(resultsManager.canTransition(GameState.SHOWING_RESULTS, GameState.SPINNING)).toBe(false);
+        expect(resultsManager.canTransition(GameState.SHOWING_RESULTS, GameState.SPINNING)).toBe(
+          false
+        );
       });
 
       test('should handle state consistency when canTransition is called before transitionTo', () => {
         // canTransitionを呼び出しても状態は変更されない
         const initialState = stateManager.getCurrentState();
-        
+
         stateManager.canTransition(GameState.IDLE, GameState.SPINNING);
         expect(stateManager.getCurrentState()).toBe(initialState);
-        
+
         stateManager.canTransition(GameState.IDLE, GameState.SHOWING_RESULTS);
         expect(stateManager.getCurrentState()).toBe(initialState);
-        
+
         // 実際の遷移
         stateManager.transitionTo(GameState.SPINNING);
         expect(stateManager.getCurrentState()).toBe(GameState.SPINNING);
@@ -334,14 +342,57 @@ describe('StateManager', () => {
         };
 
         const testSequence: (TransitionStep | CheckStep)[] = [
-          { action: 'transition', target: GameState.SPINNING, expected: true, finalState: GameState.SPINNING },
-          { action: 'check', from: GameState.SPINNING, to: GameState.IDLE, expected: false, finalState: GameState.SPINNING },
-          { action: 'transition', target: GameState.IDLE, expected: false, finalState: GameState.SPINNING },
-          { action: 'check', from: GameState.SPINNING, to: GameState.SHOWING_RESULTS, expected: true, finalState: GameState.SPINNING },
-          { action: 'transition', target: GameState.SHOWING_RESULTS, expected: true, finalState: GameState.SHOWING_RESULTS },
-          { action: 'transition', target: GameState.SPINNING, expected: false, finalState: GameState.SHOWING_RESULTS },
-          { action: 'check', from: GameState.SHOWING_RESULTS, to: GameState.IDLE, expected: true, finalState: GameState.SHOWING_RESULTS },
-          { action: 'transition', target: GameState.IDLE, expected: true, finalState: GameState.IDLE },
+          {
+            action: 'transition',
+            target: GameState.SPINNING,
+            expected: true,
+            finalState: GameState.SPINNING,
+          },
+          {
+            action: 'check',
+            from: GameState.SPINNING,
+            to: GameState.IDLE,
+            expected: false,
+            finalState: GameState.SPINNING,
+          },
+          {
+            action: 'transition',
+            target: GameState.IDLE,
+            expected: false,
+            finalState: GameState.SPINNING,
+          },
+          {
+            action: 'check',
+            from: GameState.SPINNING,
+            to: GameState.SHOWING_RESULTS,
+            expected: true,
+            finalState: GameState.SPINNING,
+          },
+          {
+            action: 'transition',
+            target: GameState.SHOWING_RESULTS,
+            expected: true,
+            finalState: GameState.SHOWING_RESULTS,
+          },
+          {
+            action: 'transition',
+            target: GameState.SPINNING,
+            expected: false,
+            finalState: GameState.SHOWING_RESULTS,
+          },
+          {
+            action: 'check',
+            from: GameState.SHOWING_RESULTS,
+            to: GameState.IDLE,
+            expected: true,
+            finalState: GameState.SHOWING_RESULTS,
+          },
+          {
+            action: 'transition',
+            target: GameState.IDLE,
+            expected: true,
+            finalState: GameState.IDLE,
+          },
         ];
 
         for (const step of testSequence) {
@@ -374,10 +425,10 @@ describe('StateManager', () => {
     describe('Property 7: State Transition Consistency', () => {
       /**
        * **検証対象: 要件 6.1, 6.2, 6.3, 6.4, 6.5**
-       * 
+       *
        * プロパティ: 任意のゲーム状態遷移において、システムは待機 → 回転中 → 結果表示 → 待機の
        * 順序で移動し、無効な遷移を防止するべきです。
-       * 
+       *
        * このテストは以下を検証します:
        * - スピンがアクティブでない時、待機状態を維持 (要件 6.1)
        * - スピン開始時、回転状態に遷移 (要件 6.2)
@@ -389,38 +440,48 @@ describe('StateManager', () => {
         fc.assert(
           fc.property(
             fc.integer({ min: 1, max: 50 }), // 完全なサイクル数
-            (numCycles) => {
+            numCycles => {
               const testStateManager = new StateManager();
-              
+
               // 初期状態は待機状態であるべき (要件 6.1)
               expect(testStateManager.getCurrentState()).toBe(GameState.IDLE);
-              
+
               for (let cycle = 0; cycle < numCycles; cycle++) {
                 // サイクル開始: 待機状態
                 expect(testStateManager.getCurrentState()).toBe(GameState.IDLE);
-                
+
                 // 待機状態から回転状態への遷移は許可されるべき (要件 6.2)
-                expect(testStateManager.canTransition(GameState.IDLE, GameState.SPINNING)).toBe(true);
+                expect(testStateManager.canTransition(GameState.IDLE, GameState.SPINNING)).toBe(
+                  true
+                );
                 expect(testStateManager.transitionTo(GameState.SPINNING)).toBe(true);
                 expect(testStateManager.getCurrentState()).toBe(GameState.SPINNING);
-                
+
                 // 回転状態中、待機状態への遷移は防止されるべき (要件 6.3)
-                expect(testStateManager.canTransition(GameState.SPINNING, GameState.IDLE)).toBe(false);
+                expect(testStateManager.canTransition(GameState.SPINNING, GameState.IDLE)).toBe(
+                  false
+                );
                 expect(testStateManager.transitionTo(GameState.IDLE)).toBe(false);
                 expect(testStateManager.getCurrentState()).toBe(GameState.SPINNING);
-                
+
                 // 回転状態から結果表示状態への遷移は許可されるべき (要件 6.4)
-                expect(testStateManager.canTransition(GameState.SPINNING, GameState.SHOWING_RESULTS)).toBe(true);
+                expect(
+                  testStateManager.canTransition(GameState.SPINNING, GameState.SHOWING_RESULTS)
+                ).toBe(true);
                 expect(testStateManager.transitionTo(GameState.SHOWING_RESULTS)).toBe(true);
                 expect(testStateManager.getCurrentState()).toBe(GameState.SHOWING_RESULTS);
-                
+
                 // 結果表示状態から回転状態への遷移は防止されるべき
-                expect(testStateManager.canTransition(GameState.SHOWING_RESULTS, GameState.SPINNING)).toBe(false);
+                expect(
+                  testStateManager.canTransition(GameState.SHOWING_RESULTS, GameState.SPINNING)
+                ).toBe(false);
                 expect(testStateManager.transitionTo(GameState.SPINNING)).toBe(false);
                 expect(testStateManager.getCurrentState()).toBe(GameState.SHOWING_RESULTS);
-                
+
                 // 結果表示状態から待機状態への遷移は許可されるべき (要件 6.5)
-                expect(testStateManager.canTransition(GameState.SHOWING_RESULTS, GameState.IDLE)).toBe(true);
+                expect(
+                  testStateManager.canTransition(GameState.SHOWING_RESULTS, GameState.IDLE)
+                ).toBe(true);
                 expect(testStateManager.transitionTo(GameState.IDLE)).toBe(true);
                 expect(testStateManager.getCurrentState()).toBe(GameState.IDLE);
               }
@@ -432,7 +493,7 @@ describe('StateManager', () => {
 
       /**
        * **検証対象: 要件 6.1, 6.2, 6.3, 6.4, 6.5**
-       * 
+       *
        * プロパティ: 任意の状態から任意の状態への遷移試行において、
        * 有効な遷移のみが許可され、無効な遷移は拒否されるべきです。
        */
@@ -443,33 +504,37 @@ describe('StateManager', () => {
           GameState.SPINNING,
           GameState.SHOWING_RESULTS
         );
-        
+
         fc.assert(
           fc.property(
             stateArbitrary, // 開始状態
             stateArbitrary, // 目標状態
             (fromState, toState) => {
               const testStateManager = new StateManager(fromState);
-              
+
               // 有効な遷移を定義
               const validTransitions: Record<GameState, GameState[]> = {
                 [GameState.IDLE]: [GameState.SPINNING],
                 [GameState.SPINNING]: [GameState.PARTIALLY_STOPPED, GameState.SHOWING_RESULTS],
-                [GameState.PARTIALLY_STOPPED]: [GameState.PARTIALLY_STOPPED, GameState.SHOWING_RESULTS],
-                [GameState.SHOWING_RESULTS]: [GameState.IDLE]
+                [GameState.PARTIALLY_STOPPED]: [
+                  GameState.PARTIALLY_STOPPED,
+                  GameState.SHOWING_RESULTS,
+                ],
+                [GameState.SHOWING_RESULTS]: [GameState.IDLE],
               };
-              
+
               // PARTIALLY_STOPPEDの自己遷移は許可
-              const isValidTransition = (fromState === toState && fromState === GameState.PARTIALLY_STOPPED) ||
-                                       (fromState !== toState && validTransitions[fromState]?.includes(toState));
-              
+              const isValidTransition =
+                (fromState === toState && fromState === GameState.PARTIALLY_STOPPED) ||
+                (fromState !== toState && validTransitions[fromState]?.includes(toState));
+
               // canTransitionの結果を検証
               expect(testStateManager.canTransition(fromState, toState)).toBe(isValidTransition);
-              
+
               // transitionToの動作を検証
               const transitionResult = testStateManager.transitionTo(toState);
               expect(transitionResult).toBe(isValidTransition);
-              
+
               // 状態が正しく更新されたか検証
               if (isValidTransition) {
                 expect(testStateManager.getCurrentState()).toBe(toState);
@@ -484,7 +549,7 @@ describe('StateManager', () => {
 
       /**
        * **検証対象: 要件 6.1, 6.2, 6.3, 6.4, 6.5**
-       * 
+       *
        * プロパティ: 任意の無効な遷移試行において、現在の状態は変更されず、
        * システムは一貫性を維持するべきです。
        */
@@ -499,22 +564,22 @@ describe('StateManager', () => {
             (initialState, transitionAttempts) => {
               const testStateManager = new StateManager(initialState);
               let currentState = initialState;
-              
+
               for (const targetState of transitionAttempts) {
                 const canTransition = testStateManager.canTransition(currentState, targetState);
                 const transitionResult = testStateManager.transitionTo(targetState);
-                
+
                 // canTransitionとtransitionToの結果は一致するべき
                 expect(transitionResult).toBe(canTransition);
-                
+
                 // 状態の更新を追跡
                 if (canTransition) {
                   currentState = targetState;
                 }
-                
+
                 // 現在の状態が期待通りであることを検証
                 expect(testStateManager.getCurrentState()).toBe(currentState);
-                
+
                 // 状態は常に有効であるべき
                 expect(testStateManager.isValidState(currentState)).toBe(true);
               }
@@ -526,7 +591,7 @@ describe('StateManager', () => {
 
       /**
        * **検証対象: 要件 6.1, 6.2, 6.3, 6.4, 6.5**
-       * 
+       *
        * プロパティ: 完全な状態サイクル（待機 → 回転中 → 結果表示 → 待機）は
        * 常に成功し、任意の回数繰り返すことができるべきです。
        */
@@ -534,26 +599,26 @@ describe('StateManager', () => {
         fc.assert(
           fc.property(
             fc.integer({ min: 1, max: 100 }), // サイクル数
-            (numCycles) => {
+            numCycles => {
               const testStateManager = new StateManager();
-              
+
               for (let i = 0; i < numCycles; i++) {
                 // 完全なサイクルを実行
                 expect(testStateManager.getCurrentState()).toBe(GameState.IDLE);
-                
+
                 // 待機 → 回転中
                 expect(testStateManager.transitionTo(GameState.SPINNING)).toBe(true);
                 expect(testStateManager.getCurrentState()).toBe(GameState.SPINNING);
-                
+
                 // 回転中 → 結果表示
                 expect(testStateManager.transitionTo(GameState.SHOWING_RESULTS)).toBe(true);
                 expect(testStateManager.getCurrentState()).toBe(GameState.SHOWING_RESULTS);
-                
+
                 // 結果表示 → 待機
                 expect(testStateManager.transitionTo(GameState.IDLE)).toBe(true);
                 expect(testStateManager.getCurrentState()).toBe(GameState.IDLE);
               }
-              
+
               // 最終的に待機状態に戻るべき
               expect(testStateManager.getCurrentState()).toBe(GameState.IDLE);
             }
@@ -564,7 +629,7 @@ describe('StateManager', () => {
 
       /**
        * **検証対象: 要件 6.3**
-       * 
+       *
        * プロパティ: 回転状態中、新しいスピン要求（待機状態への遷移）は
        * 常に防止されるべきです。
        */
@@ -572,29 +637,35 @@ describe('StateManager', () => {
         fc.assert(
           fc.property(
             fc.integer({ min: 1, max: 50 }), // 試行回数
-            (numAttempts) => {
+            numAttempts => {
               const testStateManager = new StateManager();
-              
+
               // 回転状態に遷移
               testStateManager.transitionTo(GameState.SPINNING);
               expect(testStateManager.getCurrentState()).toBe(GameState.SPINNING);
-              
+
               // 回転状態中、複数回の無効な遷移試行
               for (let i = 0; i < numAttempts; i++) {
                 // 待機状態への遷移は拒否されるべき
-                expect(testStateManager.canTransition(GameState.SPINNING, GameState.IDLE)).toBe(false);
+                expect(testStateManager.canTransition(GameState.SPINNING, GameState.IDLE)).toBe(
+                  false
+                );
                 expect(testStateManager.transitionTo(GameState.IDLE)).toBe(false);
-                
+
                 // 自己遷移も拒否されるべき
-                expect(testStateManager.canTransition(GameState.SPINNING, GameState.SPINNING)).toBe(false);
+                expect(testStateManager.canTransition(GameState.SPINNING, GameState.SPINNING)).toBe(
+                  false
+                );
                 expect(testStateManager.transitionTo(GameState.SPINNING)).toBe(false);
-                
+
                 // 状態は回転中のまま維持されるべき
                 expect(testStateManager.getCurrentState()).toBe(GameState.SPINNING);
               }
-              
+
               // 有効な遷移（結果表示状態へ）は依然として可能であるべき
-              expect(testStateManager.canTransition(GameState.SPINNING, GameState.SHOWING_RESULTS)).toBe(true);
+              expect(
+                testStateManager.canTransition(GameState.SPINNING, GameState.SHOWING_RESULTS)
+              ).toBe(true);
               expect(testStateManager.transitionTo(GameState.SHOWING_RESULTS)).toBe(true);
               expect(testStateManager.getCurrentState()).toBe(GameState.SHOWING_RESULTS);
             }

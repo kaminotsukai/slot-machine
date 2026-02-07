@@ -4,7 +4,7 @@ import { Symbol, WinResult } from './types';
 /**
  * UserInterfaceクラス
  * すべての視覚要素とユーザーインタラクションを処理します
- * 
+ *
  * 要件: 5.1, 5.2, 2.2, 2.5
  */
 export class UserInterface implements IUserInterface {
@@ -50,19 +50,19 @@ export class UserInterface implements IUserInterface {
     for (let i = 0; i < 3; i++) {
       const reelWrapper = document.createElement('div');
       reelWrapper.className = 'reel-wrapper';
-      
+
       const reel = document.createElement('div');
       reel.className = 'reel';
       reel.setAttribute('data-reel-index', i.toString());
-      
+
       // リールの初期表示（空）
       const symbolDisplay = document.createElement('div');
       symbolDisplay.className = 'symbol-display';
       symbolDisplay.textContent = '?';
-      
+
       reel.appendChild(symbolDisplay);
       reelWrapper.appendChild(reel);
-      
+
       // 各リールの停止ボタンを作成
       const stopButton = document.createElement('button');
       stopButton.className = 'stop-button';
@@ -71,10 +71,10 @@ export class UserInterface implements IUserInterface {
       stopButton.disabled = true; // 初期状態では無効
       stopButton.setAttribute('data-reel-index', i.toString());
       stopButton.addEventListener('click', () => this.handleStopClick(i));
-      
+
       reelWrapper.appendChild(stopButton);
       reelsContainer.appendChild(reelWrapper);
-      
+
       this.reelElements.push(reel);
       this.stopButtons.push(stopButton);
     }
@@ -118,7 +118,7 @@ export class UserInterface implements IUserInterface {
   /**
    * 停止ボタンの状態を設定
    * @param enabledStates - 各停止ボタンの有効/無効状態の配列
-   * 
+   *
    * 要件: 2.4 - リール回転開始時に停止ボタンを有効化
    * 要件: 2.6 - リール停止時に停止ボタンを無効化
    * 要件: 5.3 - 各リールに対応する停止ボタンを配置
@@ -135,7 +135,7 @@ export class UserInterface implements IUserInterface {
       const button = this.stopButtons[index];
       if (button) {
         button.disabled = !enabled;
-        
+
         if (enabled) {
           button.classList.remove('disabled');
           button.classList.add('enabled');
@@ -150,7 +150,7 @@ export class UserInterface implements IUserInterface {
   /**
    * リールにシンボルを表示
    * @param symbols - 表示するシンボルの配列（nullの場合は回転中を示す）
-   * 
+   *
    * 要件: 5.1 - リールを目立つように表示
    */
   displayReels(symbols: (Symbol | null)[]): void {
@@ -182,7 +182,7 @@ export class UserInterface implements IUserInterface {
   /**
    * スピンボタンの状態を設定
    * @param enabled - ボタンを有効にするかどうか
-   * 
+   *
    * 要件: 2.2 - スピン中はボタンを無効化
    * 要件: 2.5 - スピン完了後にボタンを再有効化
    * 要件: 5.2 - スピンボタンをアクセスしやすい位置に配置
@@ -190,7 +190,7 @@ export class UserInterface implements IUserInterface {
   displaySpinButton(enabled: boolean): void {
     if (this.spinButton) {
       this.spinButton.disabled = !enabled;
-      
+
       if (enabled) {
         this.spinButton.classList.remove('disabled');
         this.spinButton.classList.add('enabled');
@@ -204,13 +204,13 @@ export class UserInterface implements IUserInterface {
   /**
    * ゲーム結果を表示
    * @param result - 表示する勝敗結果
-   * 
+   *
    * 要件: 5.4 - 勝敗について即座に視覚的フィードバックを提供
    */
   displayResult(result: WinResult): void {
     if (this.resultDisplay) {
       this.resultDisplay.textContent = result.message;
-      
+
       // 勝敗に応じてクラスを設定
       this.resultDisplay.classList.remove('win', 'lose');
       if (result.isWin) {
@@ -218,7 +218,7 @@ export class UserInterface implements IUserInterface {
       } else {
         this.resultDisplay.classList.add('lose');
       }
-      
+
       // 結果を表示
       this.resultDisplay.style.display = 'block';
     }
@@ -228,10 +228,13 @@ export class UserInterface implements IUserInterface {
    * 個別リールのスピンアニメーションを開始
    * @param reelIndex - アニメーションを開始するリールのインデックス（省略時は全リール）
    * @param onSymbolChange - シンボルが変わるたびに呼ばれるコールバック（目押し用）
-   * 
+   *
    * 要件: 2.3 - 回転動作を示す視覚的フィードバックを表示
    */
-  startSpinAnimation(reelIndex?: number, onSymbolChange?: (reelIndex: number, symbol: Symbol) => void): void {
+  startSpinAnimation(
+    reelIndex?: number,
+    onSymbolChange?: (reelIndex: number, symbol: Symbol) => void
+  ): void {
     if (reelIndex !== undefined) {
       // 特定のリールのみアニメーション開始
       const reel = this.reelElements[reelIndex];
@@ -258,7 +261,7 @@ export class UserInterface implements IUserInterface {
   /**
    * 個別リールのスピンアニメーションを停止
    * @param reelIndex - アニメーションを停止するリールのインデックス
-   * 
+   *
    * 要件: 2.5 - 対応するリールを停止させ、最終シンボルを表示
    */
   stopSpinAnimation(reelIndex: number): void {
@@ -266,13 +269,13 @@ export class UserInterface implements IUserInterface {
     if (reel) {
       reel.classList.remove('spinning');
       reel.classList.add('stopped');
-      
+
       // 停止エフェクトを短時間表示後に削除
       setTimeout(() => {
         reel.classList.remove('stopped');
       }, 300);
     }
-    
+
     // 全リールが停止したかチェック
     const allStopped = this.reelElements.every(r => !r.classList.contains('spinning'));
     if (allStopped) {

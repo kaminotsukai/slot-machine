@@ -4,7 +4,7 @@ import { Symbol, WinResult, WinCondition } from './types';
 /**
  * WinEvaluatorクラス
  * スピン結果を評価して勝敗を判定する
- * 
+ *
  * 要件4.1, 4.2, 4.3に対応：
  * - 勝敗判定ロジックの実装
  * - 3つのシンボルがすべて同一の場合に勝利を宣言
@@ -22,7 +22,7 @@ export class WinEvaluator implements IWinEvaluator {
         if (symbols.length !== 3) return false;
         return symbols[0]!.id === symbols[1]!.id && symbols[1]!.id === symbols[2]!.id;
       },
-      message: '🎉 おめでとうございます！3つ揃いで勝利です！'
+      message: '🎉 おめでとうございます！3つ揃いで勝利です！',
     });
   }
 
@@ -36,7 +36,7 @@ export class WinEvaluator implements IWinEvaluator {
     if (!symbols || symbols.length !== 3) {
       return {
         isWin: false,
-        message: 'エラー：無効なシンボル配列です'
+        message: 'エラー：無効なシンボル配列です',
       };
     }
 
@@ -45,7 +45,7 @@ export class WinEvaluator implements IWinEvaluator {
       if (!symbol || !symbol.id || !symbol.name || !symbol.displayValue) {
         return {
           isWin: false,
-          message: 'エラー：無効なシンボルが含まれています'
+          message: 'エラー：無効なシンボルが含まれています',
         };
       }
     }
@@ -56,7 +56,7 @@ export class WinEvaluator implements IWinEvaluator {
         return {
           isWin: true,
           winType: condition.id,
-          message: condition.message
+          message: condition.message,
         };
       }
     }
@@ -64,7 +64,7 @@ export class WinEvaluator implements IWinEvaluator {
     // 勝利条件に該当しない場合は敗北
     return {
       isWin: false,
-      message: `${symbols[0]!.displayValue} ${symbols[1]!.displayValue} ${symbols[2]!.displayValue} - 残念！次回頑張りましょう！`
+      message: `${symbols[0]!.displayValue} ${symbols[1]!.displayValue} ${symbols[2]!.displayValue} - 残念！次回頑張りましょう！`,
     };
   }
 
@@ -96,7 +96,13 @@ export class WinEvaluator implements IWinEvaluator {
    */
   addWinCondition(condition: WinCondition): void {
     // 入力検証
-    if (!condition || !condition.id || !condition.name || !condition.pattern || !condition.message) {
+    if (
+      !condition ||
+      !condition.id ||
+      !condition.name ||
+      !condition.pattern ||
+      !condition.message
+    ) {
       throw new Error('無効な勝利条件です');
     }
 

@@ -17,7 +17,7 @@ describe('ReelManager', () => {
     it('should initialize with custom symbols when provided', () => {
       const customSymbols: Symbol[] = [
         { id: 'test1', name: 'Test1', displayValue: '🎯' },
-        { id: 'test2', name: 'Test2', displayValue: '🎲' }
+        { id: 'test2', name: 'Test2', displayValue: '🎲' },
       ];
       const customReelManager = new ReelManager(customSymbols);
       expect(customReelManager.getSymbolSet()).toEqual(customSymbols);
@@ -65,7 +65,7 @@ describe('ReelManager', () => {
   describe('spinReels', () => {
     it('should set all reels to spinning state', () => {
       reelManager.spinReels();
-      
+
       // すべてのリールが回転中であることを確認
       expect(reelManager.isReelSpinning(0)).toBe(true);
       expect(reelManager.isReelSpinning(1)).toBe(true);
@@ -78,15 +78,15 @@ describe('ReelManager', () => {
       reelManager.stopReel(0);
       reelManager.stopReel(1);
       reelManager.stopReel(2);
-      
+
       // 新しいスピン
       reelManager.spinReels();
-      
+
       // すべてのリールが回転中になっていることを確認
       expect(reelManager.isReelSpinning(0)).toBe(true);
       expect(reelManager.isReelSpinning(1)).toBe(true);
       expect(reelManager.isReelSpinning(2)).toBe(true);
-      
+
       // 回転中のリールは現在のシンボルを返す
       const symbols = reelManager.getAllReelSymbols();
       symbols.forEach(symbol => {
@@ -102,7 +102,7 @@ describe('ReelManager', () => {
 
     it('should stop a specific reel and return a symbol', () => {
       const symbol = reelManager.stopReel(0);
-      
+
       expect(symbol).toBeDefined();
       expect(DEFAULT_SYMBOLS).toContainEqual(symbol);
       expect(reelManager.isReelSpinning(0)).toBe(false);
@@ -110,7 +110,7 @@ describe('ReelManager', () => {
 
     it('should only stop the specified reel', () => {
       reelManager.stopReel(0);
-      
+
       expect(reelManager.isReelSpinning(0)).toBe(false);
       expect(reelManager.isReelSpinning(1)).toBe(true);
       expect(reelManager.isReelSpinning(2)).toBe(true);
@@ -118,7 +118,7 @@ describe('ReelManager', () => {
 
     it('should throw error when stopping already stopped reel', () => {
       reelManager.stopReel(0);
-      
+
       expect(() => reelManager.stopReel(0)).toThrow('already stopped');
     });
 
@@ -131,7 +131,7 @@ describe('ReelManager', () => {
   describe('getAllReelSymbols', () => {
     it('should return current symbols for spinning reels', () => {
       reelManager.spinReels();
-      
+
       const symbols = reelManager.getAllReelSymbols();
       // 回転中のリールは現在のシンボルを返す
       expect(symbols.length).toBe(3);
@@ -144,7 +144,7 @@ describe('ReelManager', () => {
       reelManager.spinReels();
       const symbol1 = reelManager.stopReel(0);
       const symbol2 = reelManager.stopReel(1);
-      
+
       const symbols = reelManager.getAllReelSymbols();
       expect(symbols[0]).toEqual(symbol1);
       expect(symbols[1]).toEqual(symbol2);
@@ -155,9 +155,7 @@ describe('ReelManager', () => {
 
   describe('validateSymbolSet', () => {
     it('should return true for valid symbol set', () => {
-      const validSymbols: Symbol[] = [
-        { id: 'test', name: 'Test', displayValue: '🎯' }
-      ];
+      const validSymbols: Symbol[] = [{ id: 'test', name: 'Test', displayValue: '🎯' }];
       expect(reelManager.validateSymbolSet(validSymbols)).toBe(true);
     });
 
@@ -177,7 +175,7 @@ describe('ReelManager', () => {
         { id: 'test', name: 'Test', displayValue: '' }, // empty displayValue
         { name: 'Test', displayValue: '🎯' } as any, // missing id
       ];
-      
+
       invalidSymbols.forEach(invalidSet => {
         expect(reelManager.validateSymbolSet([invalidSet])).toBe(false);
       });
@@ -188,10 +186,10 @@ describe('ReelManager', () => {
     it('should return a copy of the symbol set', () => {
       const symbolSet = reelManager.getSymbolSet();
       expect(symbolSet).toEqual(DEFAULT_SYMBOLS);
-      
+
       // Modify the returned array
       symbolSet.push({ id: 'new', name: 'New', displayValue: '🆕' });
-      
+
       // Original should be unchanged
       expect(reelManager.getSymbolSet()).toEqual(DEFAULT_SYMBOLS);
     });
@@ -201,15 +199,15 @@ describe('ReelManager', () => {
     describe('Property 4: Random Symbol Generation Fairness', () => {
       /**
        * **Validates: Requirements 3.2, 3.7**
-       * 
-       * Property: For any spin operation, each reel should independently 
+       *
+       * Property: For any spin operation, each reel should independently
        * generate symbols with equal probability distribution across the entire symbol set.
        */
       it('should generate symbols with equal probability distribution', () => {
         fc.assert(
           fc.property(
             fc.integer({ min: 500, max: 2000 }), // Number of individual generations
-            (numGenerations) => {
+            numGenerations => {
               const symbolCounts = new Map<string, number>();
 
               // Initialize counters
@@ -220,10 +218,10 @@ describe('ReelManager', () => {
               // Generate symbols and count occurrences
               for (let i = 0; i < numGenerations; i++) {
                 const symbol = reelManager.generateRandomSymbol();
-                
+
                 // Verify symbol is from the valid set
                 expect(DEFAULT_SYMBOLS.some(s => s.id === symbol.id)).toBe(true);
-                
+
                 const currentCount = symbolCounts.get(symbol.id) || 0;
                 symbolCounts.set(symbol.id, currentCount + 1);
               }
@@ -247,45 +245,45 @@ describe('ReelManager', () => {
     describe('Property 5: Stopped Reel State Maintenance', () => {
       /**
        * **Validates: Requirements 3.4, 3.5, 3.6**
-       * 
-       * Property: In any partially stopped state, stopped reel symbols should not change 
+       *
+       * Property: In any partially stopped state, stopped reel symbols should not change
        * while other reels are spinning, display exactly one symbol, and be from the consistent symbol set.
        */
       it('should maintain stopped reel state while other reels spin', () => {
         fc.assert(
           fc.property(
             fc.array(fc.integer({ min: 0, max: 2 }), { minLength: 1, maxLength: 3 }), // Which reels to stop
-            (reelsToStop) => {
+            reelsToStop => {
               // Remove duplicates
               const uniqueReels = Array.from(new Set(reelsToStop)).sort();
-              
+
               // Start spinning
               reelManager.spinReels();
-              
+
               // Stop specified reels and record their symbols
               const stoppedSymbols = new Map<number, Symbol>();
               uniqueReels.forEach(reelIndex => {
                 const symbol = reelManager.stopReel(reelIndex);
                 stoppedSymbols.set(reelIndex, symbol);
-                
+
                 // Verify symbol is from consistent set
                 expect(DEFAULT_SYMBOLS).toContainEqual(symbol);
               });
-              
+
               // Verify stopped reels maintain their state
               const currentSymbols = reelManager.getAllReelSymbols();
               uniqueReels.forEach(reelIndex => {
                 const stoppedSymbol = stoppedSymbols.get(reelIndex);
                 const currentSymbol = currentSymbols[reelIndex];
-                
+
                 // Stopped reel should display exactly one symbol
                 expect(currentSymbol).not.toBeNull();
                 expect(currentSymbol).toEqual(stoppedSymbol);
-                
+
                 // Reel should not be spinning
                 expect(reelManager.isReelSpinning(reelIndex)).toBe(false);
               });
-              
+
               // Verify other reels are still spinning
               for (let i = 0; i < 3; i++) {
                 if (!uniqueReels.includes(i)) {

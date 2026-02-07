@@ -7,7 +7,7 @@ export interface WinEvaluator {
   // Win evaluation
   evaluateResult(symbols: Symbol[]): WinResult;
   isWinningCombination(symbols: Symbol[]): boolean;
-  
+
   // Win condition management
   addWinCondition(condition: WinCondition): void;
   getWinConditions(): WinCondition[];

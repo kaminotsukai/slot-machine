@@ -1,7 +1,7 @@
 /**
  * UserInterfaceクラスのユニットテスト
  * DOM操作、イベントハンドリング、表示機能をテストします
- * 
+ *
  * 要件: 5.1, 5.2, 5.3, 2.2, 2.5
  */
 
@@ -17,7 +17,7 @@ describe('UserInterface', () => {
     container = document.createElement('div');
     container.id = 'slot-machine-container';
     document.body.appendChild(container);
-    
+
     // UserInterfaceインスタンスを作成
     ui = new UserInterface('slot-machine-container');
   });
@@ -69,7 +69,7 @@ describe('UserInterface', () => {
       const symbols: Symbol[] = [
         { id: 'cherry', name: 'Cherry', displayValue: '🍒' },
         { id: 'lemon', name: 'Lemon', displayValue: '🍋' },
-        { id: 'orange', name: 'Orange', displayValue: '🍊' }
+        { id: 'orange', name: 'Orange', displayValue: '🍊' },
       ];
 
       ui.displayReels(symbols);
@@ -84,7 +84,7 @@ describe('UserInterface', () => {
       const symbols: (Symbol | null)[] = [
         { id: 'cherry', name: 'Cherry', displayValue: '🍒' },
         null,
-        { id: 'orange', name: 'Orange', displayValue: '🍊' }
+        { id: 'orange', name: 'Orange', displayValue: '🍊' },
       ];
 
       ui.displayReels(symbols);
@@ -97,9 +97,9 @@ describe('UserInterface', () => {
 
     test('3つ以外のシンボル数の場合はエラーログを出力', () => {
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      
+
       ui.displayReels([]);
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('Expected exactly 3 symbols, got:', 0);
       consoleSpy.mockRestore();
     });
@@ -108,7 +108,7 @@ describe('UserInterface', () => {
   describe('displaySpinButton', () => {
     test('ボタンを有効化できる', () => {
       ui.displaySpinButton(true);
-      
+
       const spinButton = container.querySelector('.spin-button') as HTMLButtonElement;
       expect(spinButton.disabled).toBe(false);
       expect(spinButton.classList.contains('enabled')).toBe(true);
@@ -116,7 +116,7 @@ describe('UserInterface', () => {
 
     test('ボタンを無効化できる', () => {
       ui.displaySpinButton(false);
-      
+
       const spinButton = container.querySelector('.spin-button') as HTMLButtonElement;
       expect(spinButton.disabled).toBe(true);
       expect(spinButton.classList.contains('disabled')).toBe(true);
@@ -126,8 +126,10 @@ describe('UserInterface', () => {
   describe('displayStopButtons', () => {
     test('停止ボタンの状態を設定できる', () => {
       ui.displayStopButtons([true, false, true]);
-      
-      const stopButtons = container.querySelectorAll('.stop-button') as NodeListOf<HTMLButtonElement>;
+
+      const stopButtons = container.querySelectorAll(
+        '.stop-button'
+      ) as NodeListOf<HTMLButtonElement>;
       expect(stopButtons[0]!.disabled).toBe(false);
       expect(stopButtons[1]!.disabled).toBe(true);
       expect(stopButtons[2]!.disabled).toBe(false);
@@ -135,8 +137,10 @@ describe('UserInterface', () => {
 
     test('すべての停止ボタンを有効化できる', () => {
       ui.displayStopButtons([true, true, true]);
-      
-      const stopButtons = container.querySelectorAll('.stop-button') as NodeListOf<HTMLButtonElement>;
+
+      const stopButtons = container.querySelectorAll(
+        '.stop-button'
+      ) as NodeListOf<HTMLButtonElement>;
       stopButtons.forEach(button => {
         expect(button.disabled).toBe(false);
       });
@@ -144,8 +148,10 @@ describe('UserInterface', () => {
 
     test('すべての停止ボタンを無効化できる', () => {
       ui.displayStopButtons([false, false, false]);
-      
-      const stopButtons = container.querySelectorAll('.stop-button') as NodeListOf<HTMLButtonElement>;
+
+      const stopButtons = container.querySelectorAll(
+        '.stop-button'
+      ) as NodeListOf<HTMLButtonElement>;
       stopButtons.forEach(button => {
         expect(button.disabled).toBe(true);
       });
@@ -157,7 +163,7 @@ describe('UserInterface', () => {
       const winResult: WinResult = {
         isWin: true,
         winType: 'three_of_a_kind',
-        message: '🎉 おめでとうございます！3つ揃いました！'
+        message: '🎉 おめでとうございます！3つ揃いました！',
       };
 
       ui.displayResult(winResult);
@@ -170,7 +176,7 @@ describe('UserInterface', () => {
     test('敗北結果を表示する', () => {
       const loseResult: WinResult = {
         isWin: false,
-        message: '残念！もう一度挑戦してください。'
+        message: '残念！もう一度挑戦してください。',
       };
 
       ui.displayResult(loseResult);
@@ -234,7 +240,9 @@ describe('UserInterface', () => {
       // 停止ボタンを有効化
       ui.displayStopButtons([true, true, true]);
 
-      const stopButtons = container.querySelectorAll('.stop-button') as NodeListOf<HTMLButtonElement>;
+      const stopButtons = container.querySelectorAll(
+        '.stop-button'
+      ) as NodeListOf<HTMLButtonElement>;
       stopButtons[0]!.click();
       stopButtons[1]!.click();
       stopButtons[2]!.click();

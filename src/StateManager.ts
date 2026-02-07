@@ -34,7 +34,7 @@ export class StateManager implements IStateManager {
 
   /**
    * Checks if a transition from one state to another is valid
-   * Valid transitions: 
+   * Valid transitions:
    * - idle → spinning
    * - spinning → partially_stopped (when first reel stops)
    * - spinning → showing_results (when all reels stop at once)
@@ -47,7 +47,7 @@ export class StateManager implements IStateManager {
     if (from === to && from === GameState.PARTIALLY_STOPPED) {
       return true;
     }
-    
+
     // Other self-transitions are not allowed
     if (from === to) {
       return false;
@@ -58,7 +58,7 @@ export class StateManager implements IStateManager {
       [GameState.IDLE]: [GameState.SPINNING],
       [GameState.SPINNING]: [GameState.PARTIALLY_STOPPED, GameState.SHOWING_RESULTS],
       [GameState.PARTIALLY_STOPPED]: [GameState.PARTIALLY_STOPPED, GameState.SHOWING_RESULTS],
-      [GameState.SHOWING_RESULTS]: [GameState.IDLE]
+      [GameState.SHOWING_RESULTS]: [GameState.IDLE],
     };
 
     return validTransitions[from]?.includes(to) ?? false;

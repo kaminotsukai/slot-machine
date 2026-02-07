@@ -7,14 +7,14 @@ export interface GameEngine {
   // Game state management
   getCurrentState(): GameState;
   canSpin(): boolean;
-  
+
   // Spin operations
   initiateSpin(): void;
   stopReel(reelIndex: number): Symbol;
   areAllReelsStopped(): boolean;
   getCurrentReelSymbols(): (Symbol | null)[];
   evaluateResult(): SpinResult;
-  
+
   // Configuration
   getSymbols(): Symbol[];
   getWinConditions(): WinCondition[];

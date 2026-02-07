@@ -16,7 +16,7 @@ export class ReelManager implements IReelManager {
 
   constructor(customSymbols?: Symbol[]) {
     this.symbolSet = customSymbols || DEFAULT_SYMBOLS;
-    
+
     if (!this.validateSymbolSet(this.symbolSet)) {
       throw new Error('Invalid symbol set provided');
     }
@@ -31,7 +31,7 @@ export class ReelManager implements IReelManager {
   /**
    * Spins all reels - sets them to spinning state and starts animation
    * Does not generate final symbols until stopReel is called
-   * 
+   *
    * 要件: 2.1 - スピンボタンクリック時に3つのリールすべてを同時に回転
    */
   spinReels(): void {
@@ -40,7 +40,7 @@ export class ReelManager implements IReelManager {
       this.reelStates[i] = 'spinning';
       this.reelSymbols[i] = null;
       this.reelPositions[i] = 0;
-      
+
       // リールアニメーションを開始（シンボルを順番に表示）
       this.startReelAnimation(i);
     }
@@ -94,11 +94,11 @@ export class ReelManager implements IReelManager {
 
   /**
    * Stops a specific reel at its current position (for timing-based stopping)
-   * 
+   *
    * @param reelIndex - Index of the reel to stop (0-2)
    * @returns The symbol that was at the current position when stopped
    * @throws Error if reel index is invalid or reel is already stopped
-   * 
+   *
    * 要件: 2.5 - 停止ボタンクリック時に対応するリールを停止
    * 要件: 3.2 - 各リールに対して独立してランダムなシンボルを生成
    * 要件: 3.3 - 対応するリールのみを停止
@@ -106,7 +106,9 @@ export class ReelManager implements IReelManager {
   stopReel(reelIndex: number): Symbol {
     // インデックスの検証
     if (reelIndex < 0 || reelIndex >= this.REEL_COUNT) {
-      throw new Error(`Invalid reel index: ${reelIndex}. Must be between 0 and ${this.REEL_COUNT - 1}`);
+      throw new Error(
+        `Invalid reel index: ${reelIndex}. Must be between 0 and ${this.REEL_COUNT - 1}`
+      );
     }
 
     // リールが回転中かチェック
@@ -119,7 +121,7 @@ export class ReelManager implements IReelManager {
 
     // 現在位置のシンボルを取得（目押し）
     const symbol = this.getCurrentSymbolAtPosition(reelIndex);
-    
+
     // リールを停止状態に設定
     this.reelStates[reelIndex] = 'stopped';
     this.reelSymbols[reelIndex] = symbol;
@@ -129,10 +131,10 @@ export class ReelManager implements IReelManager {
 
   /**
    * Checks if a specific reel is currently spinning
-   * 
+   *
    * @param reelIndex - Index of the reel to check (0-2)
    * @returns true if the reel is spinning, false if stopped
-   * 
+   *
    * 要件: 3.5 - 他のリールが回転中、停止したリールの状態を維持
    */
   isReelSpinning(reelIndex: number): boolean {
@@ -144,15 +146,15 @@ export class ReelManager implements IReelManager {
 
   /**
    * Gets all reel symbols (current position for spinning reels, final symbol for stopped reels)
-   * 
+   *
    * @returns Array of symbols (current symbol for spinning reels, final symbol for stopped reels)
-   * 
+   *
    * 要件: 3.4 - 各リールに正確に1つのシンボルを表示
    * 要件: 3.5 - 停止したリールの状態を維持
    */
   getAllReelSymbols(): (Symbol | null)[] {
     const result: (Symbol | null)[] = [];
-    
+
     for (let i = 0; i < this.REEL_COUNT; i++) {
       if (this.reelStates[i] === 'stopped') {
         // 停止したリールは確定したシンボルを返す
@@ -166,7 +168,7 @@ export class ReelManager implements IReelManager {
         }
       }
     }
-    
+
     return result;
   }
 
@@ -185,14 +187,14 @@ export class ReelManager implements IReelManager {
     if (this.symbolSet.length === 0) {
       throw new Error('No symbols available for generation');
     }
-    
+
     const randomIndex = Math.floor(Math.random() * this.symbolSet.length);
     const symbol = this.symbolSet[randomIndex];
-    
+
     if (!symbol) {
       throw new Error('Failed to generate symbol');
     }
-    
+
     return symbol;
   }
 
@@ -206,14 +208,15 @@ export class ReelManager implements IReelManager {
     }
 
     // Check each symbol has required properties
-    return symbols.every(symbol => 
-      symbol &&
-      typeof symbol.id === 'string' &&
-      typeof symbol.name === 'string' &&
-      typeof symbol.displayValue === 'string' &&
-      symbol.id.length > 0 &&
-      symbol.name.length > 0 &&
-      symbol.displayValue.length > 0
+    return symbols.every(
+      symbol =>
+        symbol &&
+        typeof symbol.id === 'string' &&
+        typeof symbol.name === 'string' &&
+        typeof symbol.displayValue === 'string' &&
+        symbol.id.length > 0 &&
+        symbol.name.length > 0 &&
+        symbol.displayValue.length > 0
     );
   }
 
