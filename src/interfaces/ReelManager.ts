@@ -5,8 +5,11 @@ import { Symbol } from '../types';
  */
 export interface ReelManager {
   // Reel operations
-  spinReels(): Promise<Symbol[]>;
+  spinReels(): void;
+  stopReel(reelIndex: number): Symbol;
+  isReelSpinning(reelIndex: number): boolean;
   getReelCount(): number;
+  getAllReelSymbols(): (Symbol | null)[];
   
   // Symbol management
   generateRandomSymbol(): Symbol;

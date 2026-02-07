@@ -52,6 +52,14 @@ h1 {
   box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* リールラッパー（リール + 停止ボタン） */
+.reel-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
 /* 個別のリール */
 .reel {
   width: 120px;
@@ -69,6 +77,38 @@ h1 {
 .reel.stopped {
   transform: scale(1.05);
   border-color: #667eea;
+}
+
+/* 停止ボタン */
+.stop-button {
+  padding: 8px 16px;
+  font-size: 0.9em;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(145deg, #f56565, #e53e3e);
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(245, 101, 101, 0.4);
+  transition: all 0.3s ease;
+  min-width: 80px;
+}
+
+.stop-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(245, 101, 101, 0.6);
+}
+
+.stop-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(245, 101, 101, 0.4);
+}
+
+.stop-button:disabled {
+  background: linear-gradient(145deg, #ccc, #999);
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.5;
 }
 
 /* シンボル表示 */
@@ -169,6 +209,10 @@ h1 {
     padding: 15px;
   }
 
+  .reel-wrapper {
+    gap: 8px;
+  }
+
   .reel {
     width: 90px;
     height: 90px;
@@ -176,6 +220,12 @@ h1 {
 
   .symbol-display {
     font-size: 3em;
+  }
+
+  .stop-button {
+    padding: 6px 12px;
+    font-size: 0.8em;
+    min-width: 60px;
   }
 
   .spin-button {

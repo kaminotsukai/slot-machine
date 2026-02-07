@@ -52,7 +52,8 @@ export class SlotMachineApp {
    * 1. 初期状態の確認（要件1.3: 待機状態）
    * 2. 空のリールを表示（要件1.1）
    * 3. スピンボタンを有効化（要件1.2）
-   * 4. イベントハンドラの設定
+   * 4. 停止ボタンを無効化（初期状態）
+   * 5. イベントハンドラの設定
    */
   initialize(): void {
     if (this.isInitialized) {
@@ -78,9 +79,15 @@ export class SlotMachineApp {
 
     // 要件1.2: スピンボタンを有効状態で表示
     this.userInterface.displaySpinButton(true);
+    
+    // 停止ボタンを無効状態で表示
+    this.userInterface.displayStopButtons([false, false, false]);
 
     // スピンボタンのクリックイベントハンドラを設定
     this.userInterface.onSpinButtonClick(() => this.handleSpin());
+    
+    // 停止ボタンのクリックイベントハンドラを設定
+    this.userInterface.onStopButtonClick((reelIndex) => this.handleStopReel(reelIndex));
 
     this.isInitialized = true;
     console.log('✅ スロットマシンアプリケーションが初期化されました');
@@ -93,10 +100,8 @@ export class SlotMachineApp {
    * スピンフロー：
    * 1. スピンボタンを無効化（要件2.2）
    * 2. スピンアニメーションを開始（要件2.3）
-   * 3. GameEngineでスピンを実行
-   * 4. 結果のシンボルを表示（要件2.4）
-   * 5. 勝敗結果を表示（要件4.4, 4.5）
-   * 6. スピンボタンを再有効化（要件2.5）
+   * 3. GameEngineでスピンを開始
+   * 4. 停止ボタンを有効化（要件2.4）
    */
   private async handleSpin(): Promise<void> {
     try {
@@ -110,32 +115,85 @@ export class SlotMachineApp {
       this.userInterface.displaySpinButton(false);
 
       // 要件2.3: スピンアニメーションを開始
-      const animationPromise = this.userInterface.startSpinAnimation({
-        duration: 2000, // 2秒のアニメーション
-        staggeredStop: true // リールを順番に停止
+      this.userInterface.startSpinAnimation();
+
+      // GameEngineでスピンを開始
+      this.gameEngine.initiateSpin();
+
+      // 要件2.4: 停止ボタンを有効化
+      this.userInterface.displayStopButtons([true, true, true]);
+
+      console.log('🎰 スピン開始');
+
+    } catch (error) {
+      console.error('❌ スピン処理中にエラーが発生しました:', error);
+      
+      // エラー時もボタンを再有効化
+      this.userInterface.displaySpinButton(true);
+      this.userInterface.displayStopButtons([false, false, false]);
+      
+      // エラーメッセージを表示
+      this.userInterface.displayResult({
+        isWin: false,
+        message: 'エラーが発生しました。もう一度お試しください。'
       });
+    }
+  }
 
-      // GameEngineでスピンを実行
-      const spinResult = await this.gameEngine.initiateSpin();
+  /**
+   * リール停止処理を実行します
+   * 
+   * @param reelIndex - 停止するリールのインデックス
+   * 
+   * 停止フロー：
+   * 1. 指定されたリールを停止（要件2.5）
+   * 2. 停止ボタンを無効化（要件2.6）
+   * 3. すべてのリールが停止したら勝敗判定（要件2.7, 4.1）
+   */
+  private async handleStopReel(reelIndex: number): Promise<void> {
+    try {
+      // 要件2.5: 対応するリールを停止
+      const symbol = this.gameEngine.stopReel(reelIndex);
+      
+      // UIでアニメーションを停止
+      this.userInterface.stopSpinAnimation(reelIndex);
+      
+      // 停止したリールのシンボルを表示
+      const currentSymbols = this.gameEngine.getCurrentReelSymbols();
+      this.userInterface.displayReels(currentSymbols);
 
-      // アニメーションの完了を待つ
-      await animationPromise;
+      // 要件2.6: 停止したリールの停止ボタンを無効化
+      const buttonStates = currentSymbols.map(s => s === null);
+      this.userInterface.displayStopButtons(buttonStates);
 
-      // 要件2.4: すべてのリールを停止させ、最終シンボルを表示
-      this.userInterface.stopSpinAnimation();
-      this.userInterface.displayReels(spinResult.symbols);
+      console.log(`🛑 リール ${reelIndex + 1} 停止: ${symbol.displayValue}`);
 
-      // 短い遅延の後、結果を表示
-      await this.delay(300);
+      // 要件2.7, 4.1: すべてのリールが停止したら勝敗判定
+      if (this.gameEngine.areAllReelsStopped()) {
+        await this.delay(300);
+        await this.handleGameResult();
+      }
+
+    } catch (error) {
+      console.error(`❌ リール ${reelIndex + 1} の停止中にエラーが発生しました:`, error);
+    }
+  }
+
+  /**
+   * ゲーム結果を処理します
+   * 
+   * 結果処理フロー：
+   * 1. 勝敗を評価
+   * 2. 結果を表示（要件4.4, 4.5）
+   * 3. 短い遅延後にスピンボタンを再有効化
+   */
+  private async handleGameResult(): Promise<void> {
+    try {
+      // 勝敗を評価
+      const spinResult = this.gameEngine.evaluateResult();
 
       // 要件4.4, 4.5: 勝敗結果を表示
       this.userInterface.displayResult(spinResult.winResult);
-
-      // 結果表示後、短い遅延
-      await this.delay(2000);
-
-      // 要件2.5: スピンボタンを再有効化
-      this.userInterface.displaySpinButton(true);
 
       // ログ出力
       console.log('🎰 スピン結果:', {
@@ -144,18 +202,21 @@ export class SlotMachineApp {
         message: spinResult.winResult.message
       });
 
+      // 結果表示後、短い遅延
+      await this.delay(2000);
+
+      // スピンボタンを再有効化
+      this.userInterface.displaySpinButton(true);
+      
+      // 停止ボタンを無効化
+      this.userInterface.displayStopButtons([false, false, false]);
+
     } catch (error) {
-      console.error('❌ スピン処理中にエラーが発生しました:', error);
+      console.error('❌ 結果処理中にエラーが発生しました:', error);
       
       // エラー時もボタンを再有効化
       this.userInterface.displaySpinButton(true);
-      this.userInterface.stopSpinAnimation();
-      
-      // エラーメッセージを表示
-      this.userInterface.displayResult({
-        isWin: false,
-        message: 'エラーが発生しました。もう一度お試しください。'
-      });
+      this.userInterface.displayStopButtons([false, false, false]);
     }
   }
 

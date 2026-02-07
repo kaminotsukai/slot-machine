@@ -5,23 +5,16 @@ import { Symbol, WinResult } from '../types';
  */
 export interface UserInterface {
   // 表示操作
-  displayReels(symbols: Symbol[]): void;
+  displayReels(symbols: (Symbol | null)[]): void;
   displaySpinButton(enabled: boolean): void;
+  displayStopButtons(enabledStates: boolean[]): void;
   displayResult(result: WinResult): void;
   
   // アニメーション
-  startSpinAnimation(options?: {
-    duration?: number;
-    onComplete?: () => void;
-    staggeredStop?: boolean;
-  }): Promise<void>;
-  stopSpinAnimation(): void;
-  
-  // アニメーション設定
-  setAnimationDuration(duration: number): void;
-  getAnimationDuration(): number;
-  isSpinning(): boolean;
+  startSpinAnimation(reelIndex?: number): void;
+  stopSpinAnimation(reelIndex: number): void;
   
   // イベントハンドリング
   onSpinButtonClick(callback: () => void): void;
+  onStopButtonClick(callback: (reelIndex: number) => void): void;
 }

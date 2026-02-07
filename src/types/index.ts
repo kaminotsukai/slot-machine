@@ -6,6 +6,7 @@
 export enum GameState {
   IDLE = 'idle',
   SPINNING = 'spinning',
+  PARTIALLY_STOPPED = 'partially_stopped',
   SHOWING_RESULTS = 'showing_results'
 }
 

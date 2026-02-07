@@ -9,7 +9,11 @@ export interface GameEngine {
   canSpin(): boolean;
   
   // Spin operations
-  initiateSpin(): Promise<SpinResult>;
+  initiateSpin(): void;
+  stopReel(reelIndex: number): Symbol;
+  areAllReelsStopped(): boolean;
+  getCurrentReelSymbols(): (Symbol | null)[];
+  evaluateResult(): SpinResult;
   
   // Configuration
   getSymbols(): Symbol[];

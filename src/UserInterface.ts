@@ -10,9 +10,11 @@ import { Symbol, WinResult } from './types';
 export class UserInterface implements IUserInterface {
   private reelElements: HTMLElement[] = [];
   private spinButton: HTMLButtonElement | null = null;
+  private stopButtons: HTMLButtonElement[] = [];
   private resultDisplay: HTMLElement | null = null;
   private container: HTMLElement;
   private spinCallback: (() => void) | null = null;
+  private stopCallback: ((reelIndex: number) => void) | null = null;
   private isAnimating: boolean = false;
   private animationDuration: number = 1000; // デフォルト1秒
   private animationCompletionCallback: (() => void) | null = null;
@@ -33,7 +35,7 @@ export class UserInterface implements IUserInterface {
 
   /**
    * UIの初期化
-   * 3つのリール、スピンボタン、結果表示エリアを作成します
+   * 3つのリール、各リールの停止ボタン、スピンボタン、結果表示エリアを作成します
    */
   private initializeUI(): void {
     // コンテナをクリア
@@ -44,8 +46,11 @@ export class UserInterface implements IUserInterface {
     const reelsContainer = document.createElement('div');
     reelsContainer.className = 'reels-container';
 
-    // 3つのリールを作成
+    // 3つのリールと停止ボタンを作成
     for (let i = 0; i < 3; i++) {
+      const reelWrapper = document.createElement('div');
+      reelWrapper.className = 'reel-wrapper';
+      
       const reel = document.createElement('div');
       reel.className = 'reel';
       reel.setAttribute('data-reel-index', i.toString());
@@ -56,8 +61,22 @@ export class UserInterface implements IUserInterface {
       symbolDisplay.textContent = '?';
       
       reel.appendChild(symbolDisplay);
-      reelsContainer.appendChild(reel);
+      reelWrapper.appendChild(reel);
+      
+      // 各リールの停止ボタンを作成
+      const stopButton = document.createElement('button');
+      stopButton.className = 'stop-button';
+      stopButton.textContent = `停止 ${i + 1}`;
+      stopButton.type = 'button';
+      stopButton.disabled = true; // 初期状態では無効
+      stopButton.setAttribute('data-reel-index', i.toString());
+      stopButton.addEventListener('click', () => this.handleStopClick(i));
+      
+      reelWrapper.appendChild(stopButton);
+      reelsContainer.appendChild(reelWrapper);
+      
       this.reelElements.push(reel);
+      this.stopButtons.push(stopButton);
     }
 
     this.container.appendChild(reelsContainer);
@@ -87,12 +106,54 @@ export class UserInterface implements IUserInterface {
   }
 
   /**
+   * 停止ボタンのクリックを処理
+   * @param reelIndex - 停止するリールのインデックス
+   */
+  private handleStopClick(reelIndex: number): void {
+    if (this.stopCallback) {
+      this.stopCallback(reelIndex);
+    }
+  }
+
+  /**
+   * 停止ボタンの状態を設定
+   * @param enabledStates - 各停止ボタンの有効/無効状態の配列
+   * 
+   * 要件: 2.4 - リール回転開始時に停止ボタンを有効化
+   * 要件: 2.6 - リール停止時に停止ボタンを無効化
+   * 要件: 5.3 - 各リールに対応する停止ボタンを配置
+   * 要件: 5.8 - 各ボタンがどのリールに対応するかを明確に示す
+   * 要件: 6.5 - 部分停止状態中、停止していないリールの停止ボタンのみを有効化
+   */
+  displayStopButtons(enabledStates: boolean[]): void {
+    if (enabledStates.length !== 3) {
+      console.error('Expected exactly 3 enabled states, got:', enabledStates.length);
+      return;
+    }
+
+    enabledStates.forEach((enabled, index) => {
+      const button = this.stopButtons[index];
+      if (button) {
+        button.disabled = !enabled;
+        
+        if (enabled) {
+          button.classList.remove('disabled');
+          button.classList.add('enabled');
+        } else {
+          button.classList.remove('enabled');
+          button.classList.add('disabled');
+        }
+      }
+    });
+  }
+
+  /**
    * リールにシンボルを表示
-   * @param symbols - 表示するシンボルの配列（3つ）
+   * @param symbols - 表示するシンボルの配列（nullの場合は回転中を示す）
    * 
    * 要件: 5.1 - リールを目立つように表示
    */
-  displayReels(symbols: Symbol[]): void {
+  displayReels(symbols: (Symbol | null)[]): void {
     if (symbols.length !== 3) {
       console.error('Expected exactly 3 symbols, got:', symbols.length);
       return;
@@ -103,9 +164,16 @@ export class UserInterface implements IUserInterface {
       if (reel) {
         const symbolDisplay = reel.querySelector('.symbol-display');
         if (symbolDisplay) {
-          symbolDisplay.textContent = symbol.displayValue;
-          symbolDisplay.setAttribute('data-symbol-id', symbol.id);
-          symbolDisplay.setAttribute('title', symbol.name);
+          if (symbol === null) {
+            // nullの場合は回転中を示す
+            symbolDisplay.textContent = '🎰';
+            symbolDisplay.removeAttribute('data-symbol-id');
+            symbolDisplay.removeAttribute('title');
+          } else {
+            symbolDisplay.textContent = symbol.displayValue;
+            symbolDisplay.setAttribute('data-symbol-id', symbol.id);
+            symbolDisplay.setAttribute('title', symbol.name);
+          }
         }
       }
     });
@@ -157,117 +225,64 @@ export class UserInterface implements IUserInterface {
   }
 
   /**
-   * スピンアニメーションを開始
-   * @param options オプション設定
-   * @param options.duration アニメーション時間（ミリ秒）。デフォルトは1000ms
-   * @param options.onComplete アニメーション完了時のコールバック関数
-   * @param options.staggeredStop リールを順番に停止させるかどうか。デフォルトはfalse
-   * @returns アニメーション完了を示すPromise
+   * 個別リールのスピンアニメーションを開始
+   * @param reelIndex - アニメーションを開始するリールのインデックス（省略時は全リール）
    * 
    * 要件: 2.3 - 回転動作を示す視覚的フィードバックを表示
    */
-  async startSpinAnimation(options?: {
-    duration?: number;
-    onComplete?: () => void;
-    staggeredStop?: boolean;
-  }): Promise<void> {
-    this.isAnimating = true;
-    
-    // オプションから設定を取得
-    const duration = options?.duration ?? this.animationDuration;
-    this.animationCompletionCallback = options?.onComplete ?? null;
-    const staggeredStop = options?.staggeredStop ?? false;
-    
-    // すべてのリールにスピンアニメーションクラスを追加
-    this.reelElements.forEach(reel => {
-      reel.classList.add('spinning');
-      const symbolDisplay = reel.querySelector('.symbol-display');
-      if (symbolDisplay) {
-        symbolDisplay.textContent = '🎰';
-      }
-    });
-
-    // 結果表示をクリア
-    if (this.resultDisplay) {
-      this.resultDisplay.textContent = '';
-      this.resultDisplay.style.display = 'none';
-    }
-
-    // アニメーション時間を待機（実際のアニメーションはCSSで制御）
-    return new Promise(resolve => {
-      this.animationTimeoutId = window.setTimeout(() => {
-        this.animationTimeoutId = null;
-        
-        // 段階的停止が有効な場合、リールを順番に停止
-        if (staggeredStop) {
-          this.stopReelsStaggered().then(() => {
-            // 完了コールバックを実行
-            if (this.animationCompletionCallback) {
-              this.animationCompletionCallback();
-            }
-            resolve();
-          });
-        } else {
-          // 完了コールバックを実行
-          if (this.animationCompletionCallback) {
-            this.animationCompletionCallback();
-          }
-          resolve();
+  startSpinAnimation(reelIndex?: number): void {
+    if (reelIndex !== undefined) {
+      // 特定のリールのみアニメーション開始
+      const reel = this.reelElements[reelIndex];
+      if (reel) {
+        reel.classList.add('spinning');
+        const symbolDisplay = reel.querySelector('.symbol-display');
+        if (symbolDisplay) {
+          symbolDisplay.textContent = '🎰';
         }
-      }, duration);
-    });
-  }
-
-  /**
-   * スピンアニメーションを停止
-   * 
-   * 要件: 2.4 - すべてのリールを停止させ、最終シンボルを表示
-   */
-  stopSpinAnimation(): void {
-    this.isAnimating = false;
-    
-    // 実行中のタイムアウトをキャンセル
-    if (this.animationTimeoutId !== null) {
-      window.clearTimeout(this.animationTimeoutId);
-      this.animationTimeoutId = null;
-    }
-    
-    // すべてのリールからスピンアニメーションクラスを削除
-    this.reelElements.forEach(reel => {
-      reel.classList.remove('spinning');
-    });
-    
-    // 完了コールバックをクリア
-    this.animationCompletionCallback = null;
-  }
-
-  /**
-   * リールを段階的に停止させる（プライベートメソッド）
-   * より本物のスロットマシンのような体験を提供
-   * @returns すべてのリールが停止したことを示すPromise
-   */
-  private async stopReelsStaggered(): Promise<void> {
-    const staggerDelay = 200; // 各リール間の遅延（ミリ秒）
-    
-    for (let i = 0; i < this.reelElements.length; i++) {
-      await new Promise<void>(resolve => {
-        setTimeout(() => {
-          const reel = this.reelElements[i];
-          if (reel) {
-            reel.classList.remove('spinning');
-            reel.classList.add('stopped');
-          }
-          resolve();
-        }, i * staggerDelay);
-      });
-    }
-    
-    // 停止クラスを削除（次のスピンのため）
-    setTimeout(() => {
+      }
+    } else {
+      // 全リールのアニメーション開始
+      this.isAnimating = true;
       this.reelElements.forEach(reel => {
-        reel.classList.remove('stopped');
+        reel.classList.add('spinning');
+        const symbolDisplay = reel.querySelector('.symbol-display');
+        if (symbolDisplay) {
+          symbolDisplay.textContent = '🎰';
+        }
       });
-    }, 100);
+
+      // 結果表示をクリア
+      if (this.resultDisplay) {
+        this.resultDisplay.textContent = '';
+        this.resultDisplay.style.display = 'none';
+      }
+    }
+  }
+
+  /**
+   * 個別リールのスピンアニメーションを停止
+   * @param reelIndex - アニメーションを停止するリールのインデックス
+   * 
+   * 要件: 2.5 - 対応するリールを停止させ、最終シンボルを表示
+   */
+  stopSpinAnimation(reelIndex: number): void {
+    const reel = this.reelElements[reelIndex];
+    if (reel) {
+      reel.classList.remove('spinning');
+      reel.classList.add('stopped');
+      
+      // 停止エフェクトを短時間表示後に削除
+      setTimeout(() => {
+        reel.classList.remove('stopped');
+      }, 300);
+    }
+    
+    // 全リールが停止したかチェック
+    const allStopped = this.reelElements.every(r => !r.classList.contains('spinning'));
+    if (allStopped) {
+      this.isAnimating = false;
+    }
   }
 
   /**
@@ -276,6 +291,14 @@ export class UserInterface implements IUserInterface {
    */
   onSpinButtonClick(callback: () => void): void {
     this.spinCallback = callback;
+  }
+
+  /**
+   * 停止ボタンのクリックイベントハンドラを登録
+   * @param callback - ボタンがクリックされた時に呼び出される関数（リールインデックスを受け取る）
+   */
+  onStopButtonClick(callback: (reelIndex: number) => void): void {
+    this.stopCallback = callback;
   }
 
   /**
@@ -313,10 +336,15 @@ export class UserInterface implements IUserInterface {
     if (this.spinButton) {
       this.spinButton.removeEventListener('click', () => this.handleSpinClick());
     }
+    this.stopButtons.forEach((button, index) => {
+      button.removeEventListener('click', () => this.handleStopClick(index));
+    });
     this.container.innerHTML = '';
     this.reelElements = [];
+    this.stopButtons = [];
     this.spinButton = null;
     this.resultDisplay = null;
     this.spinCallback = null;
+    this.stopCallback = null;
   }
 }
