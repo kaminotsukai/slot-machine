@@ -55,12 +55,20 @@ export class UserInterface implements IUserInterface {
       reel.className = 'reel';
       reel.setAttribute('data-reel-index', i.toString());
 
-      // リールの初期表示（空）
-      const symbolDisplay = document.createElement('div');
-      symbolDisplay.className = 'symbol-display';
-      symbolDisplay.textContent = '?';
+      // リール内のシンボルコンテナを作成（3つのシンボルを縦に表示）
+      const reelSymbols = document.createElement('div');
+      reelSymbols.className = 'reel-symbols';
 
-      reel.appendChild(symbolDisplay);
+      // 3つのシンボル表示エリアを作成
+      for (let j = 0; j < 3; j++) {
+        const symbolDisplay = document.createElement('div');
+        symbolDisplay.className = 'symbol-display';
+        symbolDisplay.textContent = '?';
+        symbolDisplay.setAttribute('data-position', j.toString());
+        reelSymbols.appendChild(symbolDisplay);
+      }
+
+      reel.appendChild(reelSymbols);
       reelWrapper.appendChild(reel);
 
       // 各リールの停止ボタンを作成
@@ -162,17 +170,81 @@ export class UserInterface implements IUserInterface {
     symbols.forEach((symbol, index) => {
       const reel = this.reelElements[index];
       if (reel) {
-        const symbolDisplay = reel.querySelector('.symbol-display');
-        if (symbolDisplay) {
+        const reelSymbols = reel.querySelector('.reel-symbols');
+        if (reelSymbols) {
+          const symbolDisplays = reelSymbols.querySelectorAll('.symbol-display');
+          
           if (symbol === null) {
-            // nullの場合は回転中を示す
-            symbolDisplay.textContent = '🎰';
-            symbolDisplay.removeAttribute('data-symbol-id');
-            symbolDisplay.removeAttribute('title');
+            // nullの場合は回転中を示す（3つすべてに表示）
+            symbolDisplays.forEach(display => {
+              display.textContent = '🎰';
+              display.removeAttribute('data-symbol-id');
+              display.removeAttribute('title');
+            });
           } else {
-            symbolDisplay.textContent = symbol.displayValue;
-            symbolDisplay.setAttribute('data-symbol-id', symbol.id);
-            symbolDisplay.setAttribute('title', symbol.name);
+            // 中央のシンボル（インデックス1）にメインシンボルを表示
+            // 上下にはランダムなシンボルを表示（視覚効果用）
+            symbolDisplays.forEach((display, pos) => {
+              if (pos === 1) {
+                // 中央（ペイライン上）
+                display.textContent = symbol.displayValue;
+                display.setAttribute('data-symbol-id', symbol.id);
+                display.setAttribute('title', symbol.name);
+              } else {
+                // 上下（装飾用）
+                display.textContent = symbol.displayValue;
+                display.removeAttribute('data-symbol-id');
+                display.removeAttribute('title');
+              }
+            });
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * リールに3シンボルセット（上・中央・下）を表示
+   * @param symbolSets - 各リールの3シンボル配列の配列
+   *
+   * 要件: 5.1 - リールを目立つように表示
+   */
+  displayReelSymbolSets(symbolSets: (Symbol[] | null)[]): void {
+    if (symbolSets.length !== 3) {
+      console.error('Expected exactly 3 symbol sets, got:', symbolSets.length);
+      return;
+    }
+
+    symbolSets.forEach((symbolSet, reelIndex) => {
+      const reel = this.reelElements[reelIndex];
+      if (reel) {
+        const reelSymbols = reel.querySelector('.reel-symbols');
+        if (reelSymbols) {
+          const symbolDisplays = reelSymbols.querySelectorAll('.symbol-display');
+          
+          if (symbolSet === null) {
+            // nullの場合は回転中を示す（3つすべてに表示）
+            symbolDisplays.forEach(display => {
+              display.textContent = '🎰';
+              display.removeAttribute('data-symbol-id');
+              display.removeAttribute('title');
+            });
+          } else if (symbolSet.length === 3) {
+            // 3つのシンボルを上・中央・下に表示
+            symbolDisplays.forEach((display, pos) => {
+              const symbol = symbolSet[pos];
+              if (symbol) {
+                display.textContent = symbol.displayValue;
+                if (pos === 1) {
+                  // 中央（ペイライン上）のみIDとタイトルを設定
+                  display.setAttribute('data-symbol-id', symbol.id);
+                  display.setAttribute('title', symbol.name);
+                } else {
+                  display.removeAttribute('data-symbol-id');
+                  display.removeAttribute('title');
+                }
+              }
+            });
           }
         }
       }

@@ -75,7 +75,14 @@ export class SlotMachineApp {
       { id: 'placeholder', name: 'プレースホルダー', displayValue: '?' },
       { id: 'placeholder', name: 'プレースホルダー', displayValue: '?' },
     ];
-    this.userInterface.displayReels(placeholderSymbols);
+    
+    // 各リールに3つのプレースホルダーを表示
+    const placeholderSets = [
+      [placeholderSymbols[0]!, placeholderSymbols[1]!, placeholderSymbols[2]!],
+      [placeholderSymbols[0]!, placeholderSymbols[1]!, placeholderSymbols[2]!],
+      [placeholderSymbols[0]!, placeholderSymbols[1]!, placeholderSymbols[2]!],
+    ];
+    this.userInterface.displayReelSymbolSets(placeholderSets);
 
     // 要件1.2: スピンボタンを有効状態で表示
     this.userInterface.displaySpinButton(true);
@@ -159,8 +166,8 @@ export class SlotMachineApp {
         return;
       }
 
-      const symbols = this.gameEngine.getCurrentReelSymbols();
-      this.userInterface.displayReels(symbols);
+      const symbolSets = this.gameEngine.getCurrentReelSymbolSets();
+      this.userInterface.displayReelSymbolSets(symbolSets);
     }, 100);
   }
 
@@ -189,9 +196,9 @@ export class SlotMachineApp {
       // UIでアニメーションを停止
       this.userInterface.stopSpinAnimation(reelIndex);
 
-      // 停止したリールのシンボルを表示
-      const currentSymbols = this.gameEngine.getCurrentReelSymbols();
-      this.userInterface.displayReels(currentSymbols);
+      // 停止したリールのシンボルセットを表示
+      const currentSymbolSets = this.gameEngine.getCurrentReelSymbolSets();
+      this.userInterface.displayReelSymbolSets(currentSymbolSets);
 
       // 要件2.6: 停止ボタンの状態を更新（回転中のリールは有効、停止したリールは無効）
       const buttonStates = [

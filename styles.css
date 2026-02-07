@@ -8,7 +8,7 @@
 
 body {
   font-family: 'Arial', sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -18,19 +18,26 @@ body {
 
 .app-container {
   text-align: center;
-  background: white;
-  border-radius: 20px;
+  background: linear-gradient(145deg, #2d3748, #1a202c);
+  border-radius: 24px;
   padding: 40px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 600px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 215, 0, 0.1);
+  max-width: 700px;
   width: 100%;
+  border: 3px solid #4a5568;
 }
 
 h1 {
-  color: #333;
+  color: #ffd700;
   margin-bottom: 30px;
   font-size: 2.5em;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(255, 215, 0, 0.3);
+  font-weight: bold;
+  letter-spacing: 2px;
 }
 
 /* スロットマシンコンテナ */
@@ -45,11 +52,30 @@ h1 {
 .reels-container {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  padding: 20px;
-  background: linear-gradient(145deg, #f0f0f0, #cacaca);
-  border-radius: 15px;
-  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.2);
+  gap: 16px;
+  padding: 30px 20px;
+  background: linear-gradient(145deg, #1a202c, #2d3748);
+  border-radius: 16px;
+  box-shadow: 
+    inset 0 4px 12px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 215, 0, 0.2);
+  border: 2px solid #4a5568;
+  position: relative;
+}
+
+/* ペイライン */
+.reels-container::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 4px;
+  background: rgba(255, 215, 0, 0.5);
+  transform: translateY(-50%);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* リールラッパー（リール + 停止ボタン） */
@@ -57,147 +83,264 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  z-index: 2;
 }
 
 /* 個別のリール */
 .reel {
-  width: 120px;
-  height: 120px;
-  background: white;
-  border: 4px solid #333;
-  border-radius: 10px;
+  width: 140px;
+  height: 420px;
+  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 50%, #f8f9fa 100%);
+  border: 8px solid #2d3748;
+  border-radius: 12px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    inset 0 2px 8px rgba(255, 215, 0, 0.3),
+    inset 0 0 0 2px #ffd700;
+  overflow: hidden;
+  position: relative;
   transition: transform 0.3s ease;
 }
 
 .reel.stopped {
-  transform: scale(1.05);
-  border-color: #667eea;
+  animation: reelBounce 0.3s ease-out;
+}
+
+@keyframes reelBounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
 /* 停止ボタン */
 .stop-button {
-  padding: 8px 16px;
-  font-size: 0.9em;
+  padding: 10px 20px;
+  font-size: 14px;
   font-weight: bold;
   color: white;
-  background: linear-gradient(145deg, #f56565, #e53e3e);
-  border: none;
-  border-radius: 20px;
+  background: linear-gradient(145deg, #e53e3e, #c53030);
+  border: 2px solid #9b2c2c;
+  border-radius: 8px;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(245, 101, 101, 0.4);
-  transition: all 0.3s ease;
-  min-width: 80px;
+  box-shadow: 
+    0 4px 12px rgba(229, 62, 62, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+  min-width: 120px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .stop-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(245, 101, 101, 0.6);
+  box-shadow: 
+    0 6px 16px rgba(229, 62, 62, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background: linear-gradient(145deg, #f56565, #e53e3e);
 }
 
 .stop-button:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(245, 101, 101, 0.4);
+  box-shadow: 
+    0 2px 8px rgba(229, 62, 62, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .stop-button:disabled {
-  background: linear-gradient(145deg, #ccc, #999);
+  background: linear-gradient(145deg, #4a5568, #2d3748);
+  border-color: #1a202c;
   cursor: not-allowed;
   box-shadow: none;
   opacity: 0.5;
+  color: #718096;
+}
+
+/* リール内のシンボルコンテナ */
+.reel-symbols {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 
 /* シンボル表示 */
 .symbol-display {
-  font-size: 4em;
+  width: 100%;
+  height: 140px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 5em;
   user-select: none;
   transition: transform 0.2s ease;
+  background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(0,0,0,0.05) 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.symbol-display:last-child {
+  border-bottom: none;
+}
+
+/* 中央のシンボル（ペイライン上）をハイライト */
+.symbol-display:nth-child(2) {
+  background: linear-gradient(180deg, rgba(255,215,0,0.1) 0%, rgba(255,215,0,0.2) 50%, rgba(255,215,0,0.1) 100%);
 }
 
 /* スピンアニメーション */
-.reel.spinning .symbol-display {
-  animation: spin 0.1s linear infinite;
+.reel.spinning .reel-symbols {
+  animation: spinReel 0.1s linear infinite;
 }
 
-@keyframes spin {
+@keyframes spinReel {
   0% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0); }
+  100% { transform: translateY(-140px); }
 }
 
 /* スピンボタン */
 .spin-button {
-  padding: 15px 50px;
-  font-size: 1.5em;
+  padding: 18px 60px;
+  font-size: 24px;
   font-weight: bold;
   color: white;
   background: linear-gradient(145deg, #667eea, #764ba2);
-  border: none;
-  border-radius: 50px;
+  border: 3px solid #5a67d8;
+  border-radius: 30px;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 
+    0 6px 24px rgba(102, 126, 234, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
+  margin-top: 10px;
 }
 
 .spin-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 8px 32px rgba(102, 126, 234, 0.7),
+    0 0 40px rgba(102, 126, 234, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background: linear-gradient(145deg, #7c8aed, #8b5fc7);
 }
 
 .spin-button:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 
+    0 4px 16px rgba(102, 126, 234, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .spin-button:disabled {
-  background: linear-gradient(145deg, #ccc, #999);
+  background: linear-gradient(145deg, #4a5568, #2d3748);
+  border-color: #1a202c;
   cursor: not-allowed;
   box-shadow: none;
   opacity: 0.6;
+  color: #718096;
 }
 
 /* 結果表示 */
 .result-display {
-  font-size: 1.5em;
+  font-size: 28px;
   font-weight: bold;
-  padding: 15px 30px;
-  border-radius: 10px;
-  min-height: 60px;
+  padding: 20px 40px;
+  border-radius: 12px;
+  min-height: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  margin-top: 20px;
+  border: 2px solid transparent;
 }
 
 .result-display.win {
   background: linear-gradient(145deg, #48bb78, #38a169);
   color: white;
-  animation: celebrate 0.5s ease;
-  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+  animation: celebrate 0.6s ease;
+  box-shadow: 
+    0 6px 20px rgba(72, 187, 120, 0.6),
+    0 0 40px rgba(72, 187, 120, 0.3);
+  border-color: #2f855a;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .result-display.lose {
-  background: linear-gradient(145deg, #f56565, #e53e3e);
+  background: linear-gradient(145deg, #718096, #4a5568);
   color: white;
-  box-shadow: 0 4px 15px rgba(245, 101, 101, 0.4);
+  box-shadow: 0 4px 15px rgba(74, 85, 104, 0.4);
+  border-color: #2d3748;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes celebrate {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.05) rotate(-2deg); }
-  75% { transform: scale(1.05) rotate(2deg); }
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  15% { transform: scale(1.1) rotate(-3deg); }
+  30% { transform: scale(1.1) rotate(3deg); }
+  45% { transform: scale(1.1) rotate(-3deg); }
+  60% { transform: scale(1.1) rotate(3deg); }
+  75% { transform: scale(1.05) rotate(0deg); }
 }
 
 /* レスポンシブデザイン */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   h1 {
     font-size: 2em;
+    letter-spacing: 1px;
+  }
+
+  .app-container {
+    padding: 25px;
+  }
+
+  .reels-container {
+    gap: 12px;
+    padding: 20px 15px;
+  }
+
+  .reel-wrapper {
+    gap: 10px;
+  }
+
+  .reel {
+    width: 120px;
+    height: 360px;
+    border-width: 6px;
+  }
+
+  .symbol-display {
+    height: 120px;
+    font-size: 4em;
+  }
+
+  .stop-button {
+    padding: 8px 16px;
+    font-size: 12px;
+    min-width: 100px;
+  }
+
+  .spin-button {
+    padding: 15px 50px;
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+
+  .result-display {
+    font-size: 22px;
+    padding: 16px 30px;
+  }
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.5em;
   }
 
   .app-container {
@@ -205,8 +348,8 @@ h1 {
   }
 
   .reels-container {
-    gap: 10px;
-    padding: 15px;
+    gap: 8px;
+    padding: 15px 10px;
   }
 
   .reel-wrapper {
@@ -214,27 +357,30 @@ h1 {
   }
 
   .reel {
-    width: 90px;
-    height: 90px;
+    width: 100px;
+    height: 300px;
+    border-width: 5px;
   }
 
   .symbol-display {
+    height: 100px;
     font-size: 3em;
   }
 
   .stop-button {
     padding: 6px 12px;
-    font-size: 0.8em;
-    min-width: 60px;
+    font-size: 10px;
+    min-width: 80px;
   }
 
   .spin-button {
     padding: 12px 40px;
-    font-size: 1.2em;
+    font-size: 18px;
+    letter-spacing: 1px;
   }
 
   .result-display {
-    font-size: 1.2em;
+    font-size: 18px;
     padding: 12px 20px;
   }
 }

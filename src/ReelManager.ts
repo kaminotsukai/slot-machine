@@ -8,9 +8,11 @@ import { Symbol, DEFAULT_SYMBOLS } from './types';
  */
 export class ReelManager implements IReelManager {
   private readonly REEL_COUNT = 3;
+  private readonly SYMBOLS_PER_REEL = 3; // 各リールに表示するシンボル数
   private readonly symbolSet: Symbol[];
   private reelStates: ('spinning' | 'stopped')[];
-  private reelSymbols: (Symbol | null)[];
+  private reelSymbols: (Symbol | null)[]; // 中央のシンボル（ペイライン上）
+  private reelSymbolSets: (Symbol[] | null)[]; // 各リールの3シンボル [上, 中央, 下]
   private reelPositions: number[]; // 各リールの現在位置（0-6）
   private animationIntervals: (number | null)[]; // 各リールのアニメーション用インターバル
 
@@ -24,6 +26,7 @@ export class ReelManager implements IReelManager {
     // 各リールの状態を初期化
     this.reelStates = ['stopped', 'stopped', 'stopped'];
     this.reelSymbols = [null, null, null];
+    this.reelSymbolSets = [null, null, null];
     this.reelPositions = [0, 0, 0];
     this.animationIntervals = [null, null, null];
   }
@@ -39,6 +42,7 @@ export class ReelManager implements IReelManager {
     for (let i = 0; i < this.REEL_COUNT; i++) {
       this.reelStates[i] = 'spinning';
       this.reelSymbols[i] = null;
+      this.reelSymbolSets[i] = null;
       this.reelPositions[i] = 0;
 
       // リールアニメーションを開始（シンボルを順番に表示）
@@ -93,6 +97,38 @@ export class ReelManager implements IReelManager {
   }
 
   /**
+   * 現在のリール位置の3シンボルセットを取得（上・中央・下）
+   */
+  getCurrentSymbolSetAtPosition(reelIndex: number): Symbol[] {
+    const position = this.reelPositions[reelIndex];
+    if (position === undefined) {
+      throw new Error(`Invalid reel index: ${reelIndex}`);
+    }
+
+    const symbolSetLength = this.symbolSet.length;
+    const symbols: Symbol[] = [];
+
+    // 上のシンボル（現在位置の1つ前）
+    const topIndex = (position - 1 + symbolSetLength) % symbolSetLength;
+    const topSymbol = this.symbolSet[topIndex];
+    if (!topSymbol) throw new Error(`No symbol found at position ${topIndex}`);
+    symbols.push(topSymbol);
+
+    // 中央のシンボル（現在位置）
+    const centerSymbol = this.symbolSet[position];
+    if (!centerSymbol) throw new Error(`No symbol found at position ${position}`);
+    symbols.push(centerSymbol);
+
+    // 下のシンボル（現在位置の1つ後）
+    const bottomIndex = (position + 1) % symbolSetLength;
+    const bottomSymbol = this.symbolSet[bottomIndex];
+    if (!bottomSymbol) throw new Error(`No symbol found at position ${bottomIndex}`);
+    symbols.push(bottomSymbol);
+
+    return symbols;
+  }
+
+  /**
    * Stops a specific reel at its current position (for timing-based stopping)
    *
    * @param reelIndex - Index of the reel to stop (0-2)
@@ -119,14 +155,20 @@ export class ReelManager implements IReelManager {
     // アニメーションを停止
     this.stopReelAnimation(reelIndex);
 
-    // 現在位置のシンボルを取得（目押し）
-    const symbol = this.getCurrentSymbolAtPosition(reelIndex);
+    // 現在位置の3シンボルセットを取得（目押し）
+    const symbolSet = this.getCurrentSymbolSetAtPosition(reelIndex);
+    const centerSymbol = symbolSet[1]; // 中央のシンボル（ペイライン上）
+
+    if (!centerSymbol) {
+      throw new Error('Failed to get center symbol');
+    }
 
     // リールを停止状態に設定
     this.reelStates[reelIndex] = 'stopped';
-    this.reelSymbols[reelIndex] = symbol;
+    this.reelSymbols[reelIndex] = centerSymbol;
+    this.reelSymbolSets[reelIndex] = symbolSet;
 
-    return symbol;
+    return centerSymbol;
   }
 
   /**
@@ -163,6 +205,32 @@ export class ReelManager implements IReelManager {
         // 回転中のリールは現在位置のシンボルを返す（目押し用）
         try {
           result.push(this.getCurrentSymbolAtPosition(i));
+        } catch {
+          result.push(null);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * 各リールの3シンボルセット（上・中央・下）を取得
+   * UIで3つのシンボルを表示するために使用
+   *
+   * @returns 各リールの3シンボル配列の配列
+   */
+  getAllReelSymbolSets(): (Symbol[] | null)[] {
+    const result: (Symbol[] | null)[] = [];
+
+    for (let i = 0; i < this.REEL_COUNT; i++) {
+      if (this.reelStates[i] === 'stopped') {
+        // 停止したリールは確定した3シンボルセットを返す
+        result.push(this.reelSymbolSets[i] || null);
+      } else {
+        // 回転中のリールは現在位置の3シンボルセットを返す
+        try {
+          result.push(this.getCurrentSymbolSetAtPosition(i));
         } catch {
           result.push(null);
         }

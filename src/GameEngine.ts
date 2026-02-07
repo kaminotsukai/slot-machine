@@ -145,6 +145,14 @@ export class GameEngine implements IGameEngine {
   }
 
   /**
+   * 現在のリールの3シンボルセット（上・中央・下）を取得
+   * @returns 各リールの3シンボル配列の配列
+   */
+  getCurrentReelSymbolSets(): (Symbol[] | null)[] {
+    return this.reelManager.getAllReelSymbolSets();
+  }
+
+  /**
    * 勝敗を評価する
    * すべてのリールが停止している必要がある
    *

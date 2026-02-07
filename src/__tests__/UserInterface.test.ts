@@ -74,10 +74,15 @@ describe('UserInterface', () => {
 
       ui.displayReels(symbols);
 
-      const symbolDisplays = container.querySelectorAll('.symbol-display');
-      expect(symbolDisplays[0]!.textContent).toBe('🍒');
-      expect(symbolDisplays[1]!.textContent).toBe('🍋');
-      expect(symbolDisplays[2]!.textContent).toBe('🍊');
+      // 各リールの中央シンボル（インデックス1）を確認
+      const reels = container.querySelectorAll('.reel');
+      const reel1Center = reels[0]!.querySelectorAll('.symbol-display')[1];
+      const reel2Center = reels[1]!.querySelectorAll('.symbol-display')[1];
+      const reel3Center = reels[2]!.querySelectorAll('.symbol-display')[1];
+
+      expect(reel1Center!.textContent).toBe('🍒');
+      expect(reel2Center!.textContent).toBe('🍋');
+      expect(reel3Center!.textContent).toBe('🍊');
     });
 
     test('nullの場合は回転中アイコンを表示する', () => {
@@ -89,10 +94,15 @@ describe('UserInterface', () => {
 
       ui.displayReels(symbols);
 
-      const symbolDisplays = container.querySelectorAll('.symbol-display');
-      expect(symbolDisplays[0]!.textContent).toBe('🍒');
-      expect(symbolDisplays[1]!.textContent).toBe('🎰');
-      expect(symbolDisplays[2]!.textContent).toBe('🍊');
+      // 各リールの中央シンボル（インデックス1）を確認
+      const reels = container.querySelectorAll('.reel');
+      const reel1Center = reels[0]!.querySelectorAll('.symbol-display')[1];
+      const reel2Center = reels[1]!.querySelectorAll('.symbol-display')[1];
+      const reel3Center = reels[2]!.querySelectorAll('.symbol-display')[1];
+
+      expect(reel1Center!.textContent).toBe('🍒');
+      expect(reel2Center!.textContent).toBe('🎰');
+      expect(reel3Center!.textContent).toBe('🍊');
     });
 
     test('3つ以外のシンボル数の場合はエラーログを出力', () => {
