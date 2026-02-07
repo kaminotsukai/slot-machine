@@ -1,0 +1,38 @@
+{
+  "name": "slot-machine-app",
+  "version": "1.0.0",
+  "description": "A simple slot machine application built with TypeScript",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "build:dev": "webpack --mode development",
+    "dev": "webpack serve --mode development",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "start": "webpack serve --mode development --open"
+  },
+  "keywords": [
+    "slot-machine",
+    "game",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "copy-webpack-plugin": "^13.0.1",
+    "fast-check": "^3.15.0",
+    "html-webpack-plugin": "^5.6.6",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "process": "^0.11.10",
+    "ts-jest": "^29.1.0",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.0.0",
+    "webpack": "^5.105.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.3"
+  }
+}

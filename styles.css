@@ -1,0 +1,190 @@
+/* スロットマシンアプリケーションのスタイル */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.app-container {
+  text-align: center;
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 100%;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 2.5em;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* スロットマシンコンテナ */
+.slot-machine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+/* リールコンテナ */
+.reels-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+  background: linear-gradient(145deg, #f0f0f0, #cacaca);
+  border-radius: 15px;
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 個別のリール */
+.reel {
+  width: 120px;
+  height: 120px;
+  background: white;
+  border: 4px solid #333;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.reel.stopped {
+  transform: scale(1.05);
+  border-color: #667eea;
+}
+
+/* シンボル表示 */
+.symbol-display {
+  font-size: 4em;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+/* スピンアニメーション */
+.reel.spinning .symbol-display {
+  animation: spin 0.1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+/* スピンボタン */
+.spin-button {
+  padding: 15px 50px;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(145deg, #667eea, #764ba2);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.spin-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+}
+
+.spin-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.spin-button:disabled {
+  background: linear-gradient(145deg, #ccc, #999);
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* 結果表示 */
+.result-display {
+  font-size: 1.5em;
+  font-weight: bold;
+  padding: 15px 30px;
+  border-radius: 10px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.result-display.win {
+  background: linear-gradient(145deg, #48bb78, #38a169);
+  color: white;
+  animation: celebrate 0.5s ease;
+  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+}
+
+.result-display.lose {
+  background: linear-gradient(145deg, #f56565, #e53e3e);
+  color: white;
+  box-shadow: 0 4px 15px rgba(245, 101, 101, 0.4);
+}
+
+@keyframes celebrate {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.05) rotate(-2deg); }
+  75% { transform: scale(1.05) rotate(2deg); }
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 2em;
+  }
+
+  .app-container {
+    padding: 20px;
+  }
+
+  .reels-container {
+    gap: 10px;
+    padding: 15px;
+  }
+
+  .reel {
+    width: 90px;
+    height: 90px;
+  }
+
+  .symbol-display {
+    font-size: 3em;
+  }
+
+  .spin-button {
+    padding: 12px 40px;
+    font-size: 1.2em;
+  }
+
+  .result-display {
+    font-size: 1.2em;
+    padding: 12px 20px;
+  }
+}
