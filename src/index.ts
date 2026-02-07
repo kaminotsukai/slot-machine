@@ -101,7 +101,8 @@ export class SlotMachineApp {
    * 1. スピンボタンを無効化（要件2.2）
    * 2. スピンアニメーションを開始（要件2.3）
    * 3. GameEngineでスピンを開始
-   * 4. 停止ボタンを有効化（要件2.4）
+   * 4. すべての停止ボタンを有効化（要件2.4）
+   * 5. リールの現在のシンボルを表示（目押し用）
    */
   private async handleSpin(): Promise<void> {
     try {
@@ -120,8 +121,11 @@ export class SlotMachineApp {
       // GameEngineでスピンを開始
       this.gameEngine.initiateSpin();
 
-      // 要件2.4: 停止ボタンを有効化
+      // 要件2.4: すべての停止ボタンを有効化
       this.userInterface.displayStopButtons([true, true, true]);
+
+      // リールの現在のシンボルを定期的に更新（目押し用）
+      this.startReelSymbolUpdates();
 
       console.log('🎰 スピン開始');
 
@@ -141,13 +145,41 @@ export class SlotMachineApp {
   }
 
   /**
+   * リールの現在のシンボルを定期的に更新（目押し用）
+   */
+  private reelUpdateInterval: number | null = null;
+
+  private startReelSymbolUpdates(): void {
+    // 既存の更新を停止
+    this.stopReelSymbolUpdates();
+
+    // 100msごとにリールのシンボルを更新
+    this.reelUpdateInterval = window.setInterval(() => {
+      if (this.gameEngine.getCurrentState() === GameState.IDLE) {
+        this.stopReelSymbolUpdates();
+        return;
+      }
+
+      const symbols = this.gameEngine.getCurrentReelSymbols();
+      this.userInterface.displayReels(symbols);
+    }, 100);
+  }
+
+  private stopReelSymbolUpdates(): void {
+    if (this.reelUpdateInterval !== null) {
+      clearInterval(this.reelUpdateInterval);
+      this.reelUpdateInterval = null;
+    }
+  }
+
+  /**
    * リール停止処理を実行します
    * 
    * @param reelIndex - 停止するリールのインデックス
    * 
    * 停止フロー：
    * 1. 指定されたリールを停止（要件2.5）
-   * 2. 停止ボタンを無効化（要件2.6）
+   * 2. 停止したリールのボタンを無効化、他のリールは有効のまま（要件2.6）
    * 3. すべてのリールが停止したら勝敗判定（要件2.7, 4.1）
    */
   private async handleStopReel(reelIndex: number): Promise<void> {
@@ -162,20 +194,35 @@ export class SlotMachineApp {
       const currentSymbols = this.gameEngine.getCurrentReelSymbols();
       this.userInterface.displayReels(currentSymbols);
 
-      // 要件2.6: 停止したリールの停止ボタンを無効化
-      const buttonStates = currentSymbols.map(s => s === null);
+      // 要件2.6: 停止ボタンの状態を更新（回転中のリールは有効、停止したリールは無効）
+      const buttonStates = [
+        this.gameEngine.isReelSpinning(0),
+        this.gameEngine.isReelSpinning(1),
+        this.gameEngine.isReelSpinning(2)
+      ];
       this.userInterface.displayStopButtons(buttonStates);
 
       console.log(`🛑 リール ${reelIndex + 1} 停止: ${symbol.displayValue}`);
 
       // 要件2.7, 4.1: すべてのリールが停止したら勝敗判定
       if (this.gameEngine.areAllReelsStopped()) {
+        // リールシンボル更新を停止
+        this.stopReelSymbolUpdates();
+        
         await this.delay(300);
         await this.handleGameResult();
       }
 
     } catch (error) {
       console.error(`❌ リール ${reelIndex + 1} の停止中にエラーが発生しました:`, error);
+      
+      // エラーメッセージを表示
+      if (error instanceof Error) {
+        this.userInterface.displayResult({
+          isWin: false,
+          message: error.message
+        });
+      }
     }
   }
 

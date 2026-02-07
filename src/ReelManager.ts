@@ -4,13 +4,15 @@ import { Symbol, DEFAULT_SYMBOLS } from './types';
 /**
  * ReelManager implementation that handles the three reels and their symbol generation
  * Ensures independent random generation for exactly 3 reels with consistent symbol sets
- * Supports individual reel stopping for manual control
+ * Supports individual reel stopping for manual control with sequential stopping order
  */
 export class ReelManager implements IReelManager {
   private readonly REEL_COUNT = 3;
   private readonly symbolSet: Symbol[];
   private reelStates: ('spinning' | 'stopped')[];
   private reelSymbols: (Symbol | null)[];
+  private reelPositions: number[]; // 各リールの現在位置（0-6）
+  private animationIntervals: (number | null)[]; // 各リールのアニメーション用インターバル
 
   constructor(customSymbols?: Symbol[]) {
     this.symbolSet = customSymbols || DEFAULT_SYMBOLS;
@@ -22,11 +24,13 @@ export class ReelManager implements IReelManager {
     // 各リールの状態を初期化
     this.reelStates = ['stopped', 'stopped', 'stopped'];
     this.reelSymbols = [null, null, null];
+    this.reelPositions = [0, 0, 0];
+    this.animationIntervals = [null, null, null];
   }
 
   /**
-   * Spins all reels - sets them to spinning state
-   * Does not generate symbols until stopReel is called
+   * Spins all reels - sets them to spinning state and starts animation
+   * Does not generate final symbols until stopReel is called
    * 
    * 要件: 2.1 - スピンボタンクリック時に3つのリールすべてを同時に回転
    */
@@ -35,14 +39,64 @@ export class ReelManager implements IReelManager {
     for (let i = 0; i < this.REEL_COUNT; i++) {
       this.reelStates[i] = 'spinning';
       this.reelSymbols[i] = null;
+      this.reelPositions[i] = 0;
+      
+      // リールアニメーションを開始（シンボルを順番に表示）
+      this.startReelAnimation(i);
     }
   }
 
   /**
-   * Stops a specific reel and generates its symbol
+   * リールアニメーションを開始（目押し用）
+   * シンボルを順番に表示し続ける
+   */
+  private startReelAnimation(reelIndex: number): void {
+    // 既存のアニメーションをクリア
+    const existingInterval = this.animationIntervals[reelIndex];
+    if (existingInterval !== null && existingInterval !== undefined) {
+      clearInterval(existingInterval);
+    }
+
+    // 100msごとにシンボルを変更
+    this.animationIntervals[reelIndex] = window.setInterval(() => {
+      const currentPos = this.reelPositions[reelIndex];
+      if (currentPos !== undefined) {
+        this.reelPositions[reelIndex] = (currentPos + 1) % this.symbolSet.length;
+      }
+    }, 100);
+  }
+
+  /**
+   * リールアニメーションを停止
+   */
+  private stopReelAnimation(reelIndex: number): void {
+    const interval = this.animationIntervals[reelIndex];
+    if (interval !== null && interval !== undefined) {
+      clearInterval(interval);
+      this.animationIntervals[reelIndex] = null;
+    }
+  }
+
+  /**
+   * 現在のリール位置のシンボルを取得（目押し用）
+   */
+  getCurrentSymbolAtPosition(reelIndex: number): Symbol {
+    const position = this.reelPositions[reelIndex];
+    if (position === undefined) {
+      throw new Error(`Invalid reel index: ${reelIndex}`);
+    }
+    const symbol = this.symbolSet[position];
+    if (!symbol) {
+      throw new Error(`No symbol found at position ${position}`);
+    }
+    return symbol;
+  }
+
+  /**
+   * Stops a specific reel at its current position (for timing-based stopping)
    * 
    * @param reelIndex - Index of the reel to stop (0-2)
-   * @returns The symbol that was generated for this reel
+   * @returns The symbol that was at the current position when stopped
    * @throws Error if reel index is invalid or reel is already stopped
    * 
    * 要件: 2.5 - 停止ボタンクリック時に対応するリールを停止
@@ -60,8 +114,11 @@ export class ReelManager implements IReelManager {
       throw new Error(`Reel ${reelIndex} is already stopped`);
     }
 
-    // ランダムシンボルを生成
-    const symbol = this.generateRandomSymbol();
+    // アニメーションを停止
+    this.stopReelAnimation(reelIndex);
+
+    // 現在位置のシンボルを取得（目押し）
+    const symbol = this.getCurrentSymbolAtPosition(reelIndex);
     
     // リールを停止状態に設定
     this.reelStates[reelIndex] = 'stopped';
@@ -86,15 +143,31 @@ export class ReelManager implements IReelManager {
   }
 
   /**
-   * Gets all reel symbols (null for spinning reels)
+   * Gets all reel symbols (current position for spinning reels, final symbol for stopped reels)
    * 
-   * @returns Array of symbols (null for reels that are still spinning)
+   * @returns Array of symbols (current symbol for spinning reels, final symbol for stopped reels)
    * 
    * 要件: 3.4 - 各リールに正確に1つのシンボルを表示
    * 要件: 3.5 - 停止したリールの状態を維持
    */
   getAllReelSymbols(): (Symbol | null)[] {
-    return [...this.reelSymbols];
+    const result: (Symbol | null)[] = [];
+    
+    for (let i = 0; i < this.REEL_COUNT; i++) {
+      if (this.reelStates[i] === 'stopped') {
+        // 停止したリールは確定したシンボルを返す
+        result.push(this.reelSymbols[i] || null);
+      } else {
+        // 回転中のリールは現在位置のシンボルを返す（目押し用）
+        try {
+          result.push(this.getCurrentSymbolAtPosition(i));
+        } catch {
+          result.push(null);
+        }
+      }
+    }
+    
+    return result;
   }
 
   /**

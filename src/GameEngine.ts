@@ -96,7 +96,7 @@ export class GameEngine implements IGameEngine {
 
     // リールが回転中かチェック
     if (!this.reelManager.isReelSpinning(reelIndex)) {
-      throw new Error(`リール ${reelIndex} は既に停止しています`);
+      throw new Error(`リール ${reelIndex + 1} は既に停止しています`);
     }
 
     // リールを停止してシンボルを取得
@@ -126,6 +126,15 @@ export class GameEngine implements IGameEngine {
     return !this.reelManager.isReelSpinning(0) &&
            !this.reelManager.isReelSpinning(1) &&
            !this.reelManager.isReelSpinning(2);
+  }
+
+  /**
+   * 指定されたリールが回転中かチェック
+   * @param reelIndex - チェックするリールのインデックス
+   * @returns リールが回転中の場合はtrue
+   */
+  isReelSpinning(reelIndex: number): boolean {
+    return this.reelManager.isReelSpinning(reelIndex);
   }
 
   /**

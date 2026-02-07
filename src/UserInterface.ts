@@ -227,29 +227,24 @@ export class UserInterface implements IUserInterface {
   /**
    * 個別リールのスピンアニメーションを開始
    * @param reelIndex - アニメーションを開始するリールのインデックス（省略時は全リール）
+   * @param onSymbolChange - シンボルが変わるたびに呼ばれるコールバック（目押し用）
    * 
    * 要件: 2.3 - 回転動作を示す視覚的フィードバックを表示
    */
-  startSpinAnimation(reelIndex?: number): void {
+  startSpinAnimation(reelIndex?: number, onSymbolChange?: (reelIndex: number, symbol: Symbol) => void): void {
     if (reelIndex !== undefined) {
       // 特定のリールのみアニメーション開始
       const reel = this.reelElements[reelIndex];
       if (reel) {
         reel.classList.add('spinning');
-        const symbolDisplay = reel.querySelector('.symbol-display');
-        if (symbolDisplay) {
-          symbolDisplay.textContent = '🎰';
-        }
+        // シンボルは外部から更新されるので、ここでは変更しない
       }
     } else {
       // 全リールのアニメーション開始
       this.isAnimating = true;
       this.reelElements.forEach(reel => {
         reel.classList.add('spinning');
-        const symbolDisplay = reel.querySelector('.symbol-display');
-        if (symbolDisplay) {
-          symbolDisplay.textContent = '🎰';
-        }
+        // シンボルは外部から更新されるので、ここでは変更しない
       });
 
       // 結果表示をクリア
