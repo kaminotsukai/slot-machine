@@ -82,9 +82,16 @@ describe('ReelManager', () => {
       // 新しいスピン
       reelManager.spinReels();
       
-      // すべてのシンボルがnullになっていることを確認
+      // すべてのリールが回転中になっていることを確認
+      expect(reelManager.isReelSpinning(0)).toBe(true);
+      expect(reelManager.isReelSpinning(1)).toBe(true);
+      expect(reelManager.isReelSpinning(2)).toBe(true);
+      
+      // 回転中のリールは現在のシンボルを返す
       const symbols = reelManager.getAllReelSymbols();
-      expect(symbols).toEqual([null, null, null]);
+      symbols.forEach(symbol => {
+        expect(symbol).not.toBeNull();
+      });
     });
   });
 
@@ -122,14 +129,18 @@ describe('ReelManager', () => {
   });
 
   describe('getAllReelSymbols', () => {
-    it('should return null for spinning reels', () => {
+    it('should return current symbols for spinning reels', () => {
       reelManager.spinReels();
       
       const symbols = reelManager.getAllReelSymbols();
-      expect(symbols).toEqual([null, null, null]);
+      // 回転中のリールは現在のシンボルを返す
+      expect(symbols.length).toBe(3);
+      symbols.forEach(symbol => {
+        expect(symbol).not.toBeNull();
+      });
     });
 
-    it('should return symbols for stopped reels', () => {
+    it('should return symbols for stopped reels and current symbols for spinning reels', () => {
       reelManager.spinReels();
       const symbol1 = reelManager.stopReel(0);
       const symbol2 = reelManager.stopReel(1);
@@ -137,7 +148,8 @@ describe('ReelManager', () => {
       const symbols = reelManager.getAllReelSymbols();
       expect(symbols[0]).toEqual(symbol1);
       expect(symbols[1]).toEqual(symbol2);
-      expect(symbols[2]).toBeNull();
+      // リール2は回転中なので現在のシンボルを返す
+      expect(symbols[2]).not.toBeNull();
     });
   });
 
@@ -278,7 +290,8 @@ describe('ReelManager', () => {
               for (let i = 0; i < 3; i++) {
                 if (!uniqueReels.includes(i)) {
                   expect(reelManager.isReelSpinning(i)).toBe(true);
-                  expect(currentSymbols[i]).toBeNull();
+                  // 回転中のリールは現在のシンボルを返す（nullではない）
+                  expect(currentSymbols[i]).not.toBeNull();
                 }
               }
             }

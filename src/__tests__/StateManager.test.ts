@@ -454,12 +454,14 @@ describe('StateManager', () => {
               // 有効な遷移を定義
               const validTransitions: Record<GameState, GameState[]> = {
                 [GameState.IDLE]: [GameState.SPINNING],
-                [GameState.SPINNING]: [GameState.SHOWING_RESULTS],
+                [GameState.SPINNING]: [GameState.PARTIALLY_STOPPED, GameState.SHOWING_RESULTS],
+                [GameState.PARTIALLY_STOPPED]: [GameState.PARTIALLY_STOPPED, GameState.SHOWING_RESULTS],
                 [GameState.SHOWING_RESULTS]: [GameState.IDLE]
               };
               
-              const isValidTransition = fromState !== toState && 
-                                       validTransitions[fromState]?.includes(toState);
+              // PARTIALLY_STOPPEDの自己遷移は許可
+              const isValidTransition = (fromState === toState && fromState === GameState.PARTIALLY_STOPPED) ||
+                                       (fromState !== toState && validTransitions[fromState]?.includes(toState));
               
               // canTransitionの結果を検証
               expect(testStateManager.canTransition(fromState, toState)).toBe(isValidTransition);

@@ -86,33 +86,38 @@ describe('SlotMachineApp 統合テスト', () => {
       app.initialize();
 
       const spinButton = container.querySelector('.spin-button') as HTMLButtonElement;
+      const stopButtons = container.querySelectorAll('.stop-button') as NodeListOf<HTMLButtonElement>;
       
-      // 初期状態: ボタンが有効
+      // 初期状態: スピンボタンが有効、停止ボタンが無効
       expect(spinButton.disabled).toBe(false);
       expect(app.getCurrentState()).toBe(GameState.IDLE);
+      stopButtons.forEach(btn => expect(btn.disabled).toBe(true));
 
       // スピンボタンをクリック
       spinButton.click();
 
-      // スピン開始直後: ボタンが無効化される（要件2.2）
+      // スピン開始直後: スピンボタンが無効化、停止ボタンが有効化される（要件2.2, 2.4）
       await new Promise(resolve => setTimeout(resolve, 100));
       expect(spinButton.disabled).toBe(true);
+      stopButtons.forEach(btn => expect(btn.disabled).toBe(false));
 
-      // スピン完了を待つ（ポーリングで確認）
-      const maxWaitTime = 8000; // 最大8秒待機
-      const pollInterval = 100; // 100msごとにチェック
-      let elapsed = 0;
-      
-      while (spinButton.disabled && elapsed < maxWaitTime) {
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
-        elapsed += pollInterval;
+      // リールを順番に停止
+      for (let i = 0; i < 3; i++) {
+        const button = stopButtons[i];
+        if (button) {
+          button.click();
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
       }
 
-      // スピン完了後: ボタンが再有効化される（要件2.5）
+      // すべてのリール停止後、結果表示を待つ
+      await new Promise(resolve => setTimeout(resolve, 2500));
+
+      // スピン完了後: ボタンが再有効化される（要件2.7）
       expect(spinButton.disabled).toBe(false);
       expect(app.getCurrentState()).toBe(GameState.IDLE);
 
-      // 結果が表示されていることを確認（要件2.4）
+      // 結果が表示されていることを確認（要件2.5）
       const reels = container.querySelectorAll('.reel .symbol-display');
       reels.forEach(symbolDisplay => {
         expect(symbolDisplay.textContent).not.toBe('?');
